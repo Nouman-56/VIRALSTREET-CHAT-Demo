@@ -27,7 +27,13 @@
     <!-- ExoClick Zone JS -->
     <script type="application/javascript" src="//ads.exoclick.com/js/zone.js" async></script>
     
+    <!-- Ad Provider - Interstitial (Zone 5930072) -->
+    <script async type="application/javascript" src="https://a.pemsrv.com/ad-provider.js"></script> 
+    <ins class="eas6a97888e33" data-zoneid="5930072"></ins> 
+    <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+    
     <style>
+        /* ========== ALL YOUR EXISTING STYLES HERE (same as before) ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a0a; font-family: 'Inter', sans-serif; color: #fff; overflow-x: hidden; }
         .site-container { max-width: 1400px; width: 100%; margin: 0 auto; background: #0a0a0a; }
@@ -412,7 +418,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
-        // ========== VISITOR STATS SYSTEM ==========
+        // ========== VISITOR STATS SYSTEM (FIXED) ==========
         async function trackVisitor() {
             try {
                 const today = new Date().toISOString().split('T')[0];
@@ -456,8 +462,16 @@
                         console.log('✅ Page view incremented for:', today);
                     }
                 }
+                
+                // Track auth page views if on login/signup page
+                if(window.location.pathname.includes('login') || window.location.pathname.includes('signup')) {
+                    await docRef.update({
+                        auth_views: firebase.firestore.FieldValue.increment(1)
+                    }).catch(() => {});
+                }
             } catch (error) {
                 console.error('❌ Error tracking visitor:', error);
+                // Retry after 2 seconds if failed (permission issue)
                 setTimeout(() => trackVisitor(), 2000);
             }
         }
@@ -536,139 +550,124 @@
         let ageVerificationDone = false;
         let ageVerifyButtonClicked = false;
         
-        // ========== AD NETWORK SYSTEM (SUPABASE) ==========
-        let adNetworks = [];
-        let userClickCount = parseInt(localStorage.getItem('userClickCount')) || 0;
-        let lastAdTime = parseInt(localStorage.getItem('lastAdTime')) || 0;
-        let dailyAdCount = parseInt(localStorage.getItem('dailyAdCount')) || 0;
-        
-        function canShowAd() {
-            if(!ageVerificationDone || !ageVerifyButtonClicked) return false;
-            
-            const now = Date.now();
-            const threeMinutes = 3 * 60 * 1000;
-            if(now - lastAdTime < threeMinutes) return false;
-            
-            if(dailyAdCount >= 30) return false;
-            
-            return true;
-        }
-        
-        function updateAdStats() {
-            dailyAdCount++;
-            lastAdTime = Date.now();
-            userClickCount++;
-            localStorage.setItem('userClickCount', userClickCount);
-            localStorage.setItem('lastAdTime', lastAdTime);
-            localStorage.setItem('dailyAdCount', dailyAdCount);
-            
-            // Reset daily count on new day
-            const today = new Date().toDateString();
-            const savedDate = localStorage.getItem('adDate');
-            if(savedDate !== today) {
-                localStorage.setItem('adDate', today);
-                localStorage.setItem('dailyAdCount', '0');
-                dailyAdCount = 0;
+        // ========== FIXED AD ROTATOR (NOW WORKING) ==========
+        class SmartAdRotator {
+            constructor() {
+                this.lastAdTime = 0;
+                this.dailyCount = 0;
+                this.loadData();
+                this.setupClickTracking();
             }
-        }
-        
-        async function loadAdNetworks() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('ad_networks')
-                    .select('*')
-                    .eq('active', true)
-                    .order('after_clicks', { ascending: true });
-                
-                if (error) throw error;
-                
-                adNetworks = data || [];
-                console.log('✅ Loaded', adNetworks.length, 'active ad networks from Supabase');
-            } catch(e) {
-                console.error('Error loading ad networks:', e);
-                // Fallback to default ads if Supabase fails
-                adNetworks = [
-                    { id: '1', name: 'ExoClick', type: 'zone', value: '5927504', after_clicks: 0, active: true },
-                    { id: '2', name: 'PopCash', type: 'zone', value: '754386', after_clicks: 5, active: true }
-                ];
-            }
-        }
-        
-        function getAdForCurrentClick() {
-            // Sort by after_clicks (lowest first)
-            const sorted = [...adNetworks].sort((a, b) => a.after_clicks - b.after_clicks);
             
-            // Find first network where userClickCount >= after_clicks
-            for(let ad of sorted) {
-                if(userClickCount >= ad.after_clicks) {
-                    return ad;
+            loadData() {
+                const today = new Date().toDateString();
+                const savedDate = localStorage.getItem('rotator_date');
+                
+                if(savedDate !== today) {
+                    localStorage.setItem('rotator_date', today);
+                    localStorage.setItem('rotator_count', 0);
+                    this.dailyCount = 0;
+                } else {
+                    this.dailyCount = parseInt(localStorage.getItem('rotator_count')) || 0;
                 }
+                this.lastAdTime = parseInt(localStorage.getItem('rotator_time')) || 0;
             }
-            return sorted[0] || null;
-        }
-        
-        function showAdFromNetwork(ad) {
-            if(!ad) return;
             
-            console.log(`📢 Showing ad: ${ad.name} (After ${ad.after_clicks} clicks, Current: ${userClickCount})`);
-            
-            if(ad.type === 'direct') {
-                // Direct Link - Open in new window
-                window.open(ad.value, '_blank');
-            } else if(ad.type === 'zone') {
-                // Zone ID based network
-                const nameLower = ad.name.toLowerCase();
+            canShowAd() {
+                if(!ageVerificationDone || !ageVerifyButtonClicked) {
+                    return false;
+                }
                 
-                if(nameLower.includes('exoclick')) {
+                const now = Date.now();
+                const fiveMinutes = 5 * 60 * 1000;
+                const timeSinceLast = now - this.lastAdTime;
+                
+                if(timeSinceLast < fiveMinutes) {
+                    return false;
+                }
+                
+                if(this.dailyCount >= 20) {
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            showExoClickAd() {
+                try {
+                    // Direct ExoClick popunder
                     if(typeof exoclick !== 'undefined' && exoclick.zone) {
-                        exoclick.zone(ad.value, 'popunder');
+                        exoclick.zone({ zone: '5927504', popunder: true });
                         console.log('✅ ExoClick ad triggered');
                     } else {
+                        // Fallback - load ExoClick script dynamically
                         var script = document.createElement('script');
                         script.src = '//ads.exoclick.com/js/zone.js';
                         script.async = true;
-                        script.onload = function() {
-                            if(typeof exoclick !== 'undefined' && exoclick.zone) {
-                                exoclick.zone(ad.value, 'popunder');
-                            }
-                        };
                         document.body.appendChild(script);
+                        setTimeout(() => {
+                            if(typeof exoclick !== 'undefined' && exoclick.zone) {
+                                exoclick.zone({ zone: '5927504', popunder: true });
+                            }
+                        }, 1000);
                     }
-                } 
-                else if(nameLower.includes('popcash')) {
+                } catch(e) {
+                    console.log('ExoClick error:', e);
+                }
+            }
+            
+            showPopCashAd() {
+                try {
                     var pop_tag = document.createElement('script');
-                    pop_tag.src = 'https://cdn.popcash.net/show.js?zone=' + ad.value;
+                    pop_tag.src = 'https://cdn.popcash.net/show.js';
                     pop_tag.async = true;
+                    document.body.appendChild(pop_tag);
                     pop_tag.onerror = function() {
                         var pop_tag2 = document.createElement('script');
-                        pop_tag2.src = 'https://cdn2.popcash.net/show.js?zone=' + ad.value;
+                        pop_tag2.src = 'https://cdn2.popcash.net/show.js';
+                        pop_tag2.async = true;
                         document.body.appendChild(pop_tag2);
                     };
-                    document.body.appendChild(pop_tag);
                     console.log('✅ PopCash ad triggered');
+                } catch(e) {
+                    console.log('PopCash error:', e);
                 }
-                else {
-                    // Generic zone-based ad (RichAds, HillTopAds, etc.)
-                    var script = document.createElement('script');
-                    script.src = `https://s.richaudience.com/scripts/pb/zone.js?zoneId=${ad.value}`;
-                    script.async = true;
-                    document.body.appendChild(script);
-                    console.log(`✅ ${ad.name} ad triggered via zone script`);
+            }
+            
+            showAd() {
+                if(!this.canShowAd()) return false;
+                
+                // Randomly choose between ExoClick and PopCash
+                const random = Math.random();
+                if(random < 0.5) {
+                    this.showExoClickAd();
+                } else {
+                    this.showPopCashAd();
                 }
+                
+                this.dailyCount++;
+                this.lastAdTime = Date.now();
+                localStorage.setItem('rotator_count', this.dailyCount);
+                localStorage.setItem('rotator_time', this.lastAdTime);
+                
+                console.log('✅ Ad shown - Daily count:', this.dailyCount);
+                return true;
+            }
+            
+            setupClickTracking() {
+                document.addEventListener('click', (e) => {
+                    const isClickable = e.target.closest('.play-now-btn') || 
+                                       e.target.closest('.download-btn') || 
+                                       e.target.closest('.movie-thumbnail');
+                    
+                    if(isClickable && ageVerificationDone && ageVerifyButtonClicked) {
+                        setTimeout(() => this.showAd(), 100);
+                    }
+                });
             }
         }
         
-        function showAdOnClick() {
-            if(!canShowAd()) return false;
-            
-            const adToShow = getAdForCurrentClick();
-            if(adToShow) {
-                showAdFromNetwork(adToShow);
-                updateAdStats();
-                return true;
-            }
-            return false;
-        }
+        const adRotator = new SmartAdRotator();
         
         let currentVideos = [];
         let currentSlides = [];
@@ -1000,9 +999,6 @@
                 showToast("Video URL not available", true);
                 return;
             }
-            
-            // Show ad before playing video
-            showAdOnClick();
             
             openVideoPlayer(video.title, video.videoUrl, videoId);
         }
@@ -1380,23 +1376,14 @@
             await loadVideosFromSupabase(); 
             await loadSlidersFromSupabase();
             await loadBlockedUsers();
-            await loadAdNetworks();
             updateCategoryTitle(); 
-            
-            // Reset daily ad count if new day
-            const today = new Date().toDateString();
-            const savedDate = localStorage.getItem('adDate');
-            if(savedDate !== today) {
-                localStorage.setItem('adDate', today);
-                localStorage.setItem('dailyAdCount', '0');
-                dailyAdCount = 0;
-            }
             
             const savedChatUsername = localStorage.getItem('chat_username');
             if (savedChatUsername && !blockedUsers.includes(savedChatUsername)) {
                 chatUsername = savedChatUsername;
             }
             
+            // Call trackVisitor on page load
             await trackVisitor();
         }
         

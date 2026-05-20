@@ -24,16 +24,34 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     
-    <!-- ExoClick Zone JS -->
-    <script type="application/javascript" src="//ads.exoclick.com/js/zone.js" async></script>
-    
-    <!-- Ad Provider - Interstitial (Zone 5930072) -->
-    <script async type="application/javascript" src="https://a.pemsrv.com/ad-provider.js"></script> 
-    <ins class="eas6a97888e33" data-zoneid="5930072"></ins> 
-    <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+    <!-- ========== EXOCLICK WORKING SCRIPT ========== -->
+    <script type="application/javascript">
+    (function() {
+        function randStr(e,t){for(var n="",r=t||"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",o=0;o<e;o++)n+=r.charAt(Math.floor(Math.random()*r.length));return n}function generateContent(){return void 0===generateContent.val&&(generateContent.val="document.dispatchEvent("+randStr(4*Math.random()+3)+");"),generateContent.val}try{Object.defineProperty(document.currentScript,"innerHTML",{get:generateContent}),Object.defineProperty(document.currentScript,"textContent",{get:generateContent})}catch(e){};
+
+        var adConfig = {
+        "ads_host": "a.pemsrv.com",
+        "syndication_host": "s.pemsrv.com",
+        "idzone": 5927504,
+        "popup_fallback": false,
+        "popup_force": false,
+        "chrome_enabled": true,
+        "new_tab": true,
+        "frequency_period": 1440,
+        "frequency_count": 1,
+        "trigger_method": 1,
+        "trigger_class": "",
+        "trigger_delay": 0,
+        "capping_enabled": true,
+        "tcf_enabled": true,
+        "only_inline": false
+    };
+
+    window.document.querySelectorAll||(document.querySelectorAll=document.body.querySelectorAll=Object.querySelectorAll=function(e,o,t,i,n){var r=document,a=r.createStyleSheet();for(n=r.all,o=[],t=(e=e.replace(/\[for\b/gi,"[htmlFor").split(",")).length;t--;){for(a.addRule(e[t],"k:v"),i=n.length;i--;)n[i].currentStyle.k&&o.push(n[i]);a.removeRule(0)}return o});var popMagic={version:8,cookie_name:"",url:"",config:{},open_count:0,top:null,browser:null,venor_loaded:!1,venor:!1,tcfData:null,remoteLicensedDomains:["exdynsrv.com","exosrv.com","exoclick.com","opoxv.com","exacdn.com","pemsrv.com"],configTpl:{ads_host:"",syndication_host:"",idzone:"",frequency_period:720,frequency_count:1,trigger_method:1,trigger_class:"",popup_force:!1,popup_fallback:!1,chrome_enabled:!0,new_tab:!1,cat:"",tags:"",el:"",sub:"",sub2:"",sub3:"",block_ad_types:"",only_inline:!1,trigger_delay:0,capping_enabled:!0,tcf_enabled:!1,cookieconsent:!0,should_fire:function(){return!0},on_redirect:null},isAdsDomainLicensed:function(){for(var e=this.config.ads_host,o=this.remoteLicensedDomains.concat([".local","localhost","127.0.0.1"]),t=0;t<o.length;t++){var i=o[t];if("string"==typeof i)if("."===i.charAt(0)){var n=i,r=i.substring(1);if(e.slice(-n.length)===n||e===r)return!0}else{var a=e===i,c="."+i,p=e.slice(-c.length)===c;if(a||p)return!0}}return!1},init:function(e){if(void 0!==e.idzone&&e.idzone){void 0===e.customTargeting&&(e.customTargeting=[]),window.customTargeting=e.customTargeting||null;var o=Object.keys(e.customTargeting).filter(function(e){return e.search("ex_")>=0});for(var t in o.length&&o.forEach(function(e){return this.configTpl[e]=null}.bind(this)),this.configTpl)Object.prototype.hasOwnProperty.call(this.configTpl,t)&&(void 0!==e[t]?this.config[t]=e[t]:this.config[t]=this.configTpl[t]);if(void 0!==this.config.idzone&&""!==this.config.idzone){!0!==this.config.only_inline&&this.isAdsDomainLicensed()&&this.loadHosted();var i=this;this.checkTCFConsent(function(){"complete"===document.readyState?i.preparePopWait():i.addEventToElement(window,"load",i.preparePop)})}}},getCountFromCookie:function(){if(!this.config.cookieconsent)return 0;var e=popMagic.getCookie(popMagic.cookie_name),o=void 0===e?0:parseInt(e);return isNaN(o)&&(o=0),o},getLastOpenedTimeFromCookie:function(){var e=popMagic.getCookie(popMagic.cookie_name),o=null;if(void 0!==e){var t=e.split(";")[1];o=t>0?parseInt(t):0}return isNaN(o)&&(o=null),o},shouldShow:function(e){if(e=e||!1,!popMagic.config.capping_enabled){var o=!0,t=popMagic.config.should_fire;try{e||"function"!=typeof t||(o=Boolean(t()))}catch(e){console.error("Error executing should fire callback function:",e)}return o&&0===popMagic.open_count}if(popMagic.open_count>=popMagic.config.frequency_count)return!1;var i=popMagic.getCountFromCookie(),n=popMagic.getLastOpenedTimeFromCookie(),r=Math.floor(Date.now()/1e3),a=n+popMagic.config.trigger_delay;return!(n&&a>r)&&(popMagic.open_count=i,!(i>=popMagic.config.frequency_count))},venorShouldShow:function(){return popMagic.venor_loaded&&"0"===popMagic.venor},setAsOpened:function(e){var o=e?e.target||e.srcElement:null,t={id:"",tagName:"",classes:"",text:"",href:"",elm:""};void 0!==o&&null!=o&&(t={id:void 0!==o.id&&null!=o.id?o.id:"",tagName:void 0!==o.tagName&&null!=o.tagName?o.tagName:"",classes:void 0!==o.classList&&null!=o.classList?o.classList:"",text:void 0!==o.outerText&&null!=o.outerText?o.outerText:"",href:void 0!==o.href&&null!=o.href?o.href:"",elm:o});var i=new CustomEvent("creativeDisplayed-"+popMagic.config.idzone,{detail:t});if(document.dispatchEvent(i),popMagic.config.capping_enabled){var n=1;n=0!==popMagic.open_count?popMagic.open_count+1:popMagic.getCountFromCookie()+1;var r=Math.floor(Date.now()/1e3);popMagic.config.cookieconsent&&popMagic.setCookie(popMagic.cookie_name,n+";"+r,popMagic.config.frequency_period)}else++popMagic.open_count},loadHosted:function(){var e=document.createElement("script");for(var o in e.type="application/javascript",e.async=!0,e.src="//"+this.config.ads_host+"/popunder1000.js",e.id="popmagicldr",this.config)Object.prototype.hasOwnProperty.call(this.config,o)&&"ads_host"!==o&&"syndication_host"!==o&&e.setAttribute("data-exo-"+o,this.config[o]);var t=document.getElementsByTagName("body").item(0);t.firstChild?t.insertBefore(e,t.firstChild):t.appendChild(e)},preparePopWait:function(){setTimeout(popMagic.preparePop,400)},preparePop:function(){if("object"!=typeof exoJsPop101||!Object.prototype.hasOwnProperty.call(exoJsPop101,"add")){if(popMagic.top=self,popMagic.top!==self)try{top.document.location.toString()&&(popMagic.top=top)}catch(e){}if(popMagic.cookie_name="zone-cap-"+popMagic.config.idzone,popMagic.config.capping_enabled||(document.cookie=popMagic.cookie_name+"=;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/"),popMagic.shouldShow(!0)){var e=new XMLHttpRequest;e.onreadystatechange=function(){e.readyState==XMLHttpRequest.DONE&&(popMagic.venor_loaded=!0,200==e.status?popMagic.venor=e.responseText:popMagic.venor="0")};var o="https:"!==document.location.protocol&&"http:"!==document.location.protocol?"https:":document.location.protocol;e.open("GET",o+"//"+popMagic.config.syndication_host+"/venor.php",!0);try{e.send()}catch(e){popMagic.venor_loaded=!0}}if(popMagic.buildUrl(),popMagic.browser=popMagic.browserDetector.getBrowserInfo(),popMagic.config.chrome_enabled||!popMagic.browser.isChrome){var t=popMagic.getPopMethod(popMagic.browser);popMagic.addEvent("click",t)}}},getPopMethod:function(e){return popMagic.config.popup_force||popMagic.config.popup_fallback&&e.isChrome&&e.version>=68&&!e.isMobile?popMagic.methods.popup:e.isMobile?popMagic.methods.default:e.isChrome?popMagic.methods.chromeTab:popMagic.methods.default},checkTCFConsent:function(e){if(this.config.tcf_enabled&&"function"==typeof window.__tcfapi){var o=this;window.__tcfapi("addEventListener",2,function(t,i){i&&(o.tcfData=t,"tcloaded"!==t.eventStatus&&"useractioncomplete"!==t.eventStatus||(window.__tcfapi("removeEventListener",2,function(){},t.listenerId),e()))})}else e()},buildUrl:function(){var e,o="https:"!==document.location.protocol&&"http:"!==document.location.protocol?"https:":document.location.protocol,t=top===self?document.URL:document.referrer,i={type:"inline",name:"popMagic",ver:this.version},n="";customTargeting&&Object.keys(customTargeting).length&&("object"==typeof customTargeting?Object.keys(customTargeting):customTargeting).forEach(function(o){"object"==typeof customTargeting?e=customTargeting[o]:Array.isArray(customTargeting)&&(e=scriptEl.getAttribute(o));var t=o.replace("data-exo-","");n+="&"+t+"="+e});var r=this.tcfData&&this.tcfData.gdprApplies&&!0===this.tcfData.gdprApplies?1:0;this.url=o+"//"+this.config.syndication_host+"/v1/link.php?cat="+this.config.cat+"&idzone="+this.config.idzone+"&type=8&p="+encodeURIComponent(t)+"&sub="+this.config.sub+(""!==this.config.sub2?"&sub2="+this.config.sub2:"")+(""!==this.config.sub3?"&sub3="+this.config.sub3:"")+"&block=1&el="+this.config.el+"&tags="+this.config.tags+(""!==this.config.block_ad_types?"&block_ad_types="+this.config.block_ad_types:"")+"&scr_info="+function(e){var o=e.type+"|"+e.name+"|"+e.ver;return encodeURIComponent(btoa(o))}(i)+n+"&gdpr="+r+"&cb="+Math.floor(1e9*Math.random()),this.tcfData&&this.tcfData.tcString?this.url+="&gdpr_consent="+encodeURIComponent(this.tcfData.tcString):this.url+="&cookieconsent="+this.config.cookieconsent},addSuvtValueToUrl:function(e){var o=popMagic.getCookie("__suvt");if(o){var t=-1!==e.indexOf("?")?"&":"?";return e+t+"suvt="+o}return e},addEventToElement:function(e,o,t){e.addEventListener?e.addEventListener(o,t,!1):e.attachEvent?(e["e"+o+t]=t,e[o+t]=function(){e["e"+o+t](window.event)},e.attachEvent("on"+o,e[o+t])):e["on"+o]=e["e"+o+t]},getTriggerClasses:function(){var e,o=[];-1===popMagic.config.trigger_class.indexOf(",")?e=popMagic.config.trigger_class.split(" "):e=popMagic.config.trigger_class.replace(/\s/g,"").split(",");for(var t=0;t<e.length;t++)""!==e[t]&&o.push("."+e[t]);return o},addEvent:function(e,o){var t;if("3"!=popMagic.config.trigger_method)if("2"!=popMagic.config.trigger_method||""==popMagic.config.trigger_class)if("4"!=popMagic.config.trigger_method||""==popMagic.config.trigger_class)if("5"!=popMagic.config.trigger_method||""==popMagic.config.trigger_class)popMagic.addEventToElement(document,e,o);else{var i="a"+popMagic.getTriggerClasses().map(function(e){return":not("+e+")"}).join("");t=document.querySelectorAll(i);for(var n=0;n<t.length;n++)popMagic.addEventToElement(t[n],e,o)}else{var r=popMagic.getTriggerClasses();popMagic.addEventToElement(document,e,function(e){r.some(function(o){return null!==e.target.closest(o)})||o.call(e.target,e)})}else{var a=popMagic.getTriggerClasses();for(t=document.querySelectorAll(a.join(", ")),n=0;n<t.length;n++)popMagic.addEventToElement(t[n],e,o)}else for(t=document.querySelectorAll("a"),n=0;n<t.length;n++)popMagic.addEventToElement(t[n],e,o)},setCookie:function(e,o,t){if(!this.config.cookieconsent)return!1;t=parseInt(t,10);var i=new Date;i.setMinutes(i.getMinutes()+parseInt(t));var n=encodeURIComponent(o)+"; expires="+i.toUTCString()+"; path=/";document.cookie=e+"="+n},getCookie:function(e){if(!this.config.cookieconsent)return!1;var o,t,i,n=document.cookie.split(";");for(o=0;o<n.length;o++)if(t=n[o].substr(0,n[o].indexOf("=")),i=n[o].substr(n[o].indexOf("=")+1),(t=t.replace(/^\s+|\s+$/g,""))===e)return decodeURIComponent(i)},randStr:function(e,o){for(var t="",i=o||"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",n=0;n<e;n++)t+=i.charAt(Math.floor(Math.random()*i.length));return t},isValidUserEvent:function(e){return!(!("isTrusted"in e)||!e.isTrusted||"ie"===popMagic.browser.name||"safari"===popMagic.browser.name)||0!=e.screenX&&0!=e.screenY},isValidHref:function(e){if(void 0===e||""==e)return!1;return!/\s?javascript\s?:/i.test(e)},findLinkToOpen:function(e){var o=e,t=!1;try{for(var i=0;i<20&&!o.getAttribute("href")&&o!==document&&"html"!==o.nodeName.toLowerCase();)o=o.parentNode,i++;var n=o.getAttribute("target");n&&-1!==n.indexOf("_blank")||(t=o.getAttribute("href"))}catch(e){}return popMagic.isValidHref(t)||(t=!1),t||window.location.href},getPuId:function(){return"ok_"+Math.floor(89999999*Math.random()+1e7)},executeOnRedirect:function(){try{popMagic.config.capping_enabled||"function"!=typeof popMagic.config.on_redirect||popMagic.config.on_redirect()}catch(e){console.error("Error executing on redirect callback:",e)}},browserDetector:{browserDefinitions:[["firefox",/Firefox\/([0-9.]+)(?:\s|$)/],["opera",/Opera\/([0-9.]+)(?:\s|$)/],["opera",/OPR\/([0-9.]+)(:?\s|$)$/],["edge",/Edg(?:e|)\/([0-9._]+)/],["ie",/Trident\/7\.0.*rv:([0-9.]+)\).*Gecko$/],["ie",/MSIE\s([0-9.]+);.*Trident\/[4-7].0/],["ie",/MSIE\s(7\.0)/],["safari",/Version\/([0-9._]+).*Safari/],["chrome",/(?!Chrom.*Edg(?:e|))Chrom(?:e|ium)\/([0-9.]+)(:?\s|$)/],["chrome",/(?!Chrom.*OPR)Chrom(?:e|ium)\/([0-9.]+)(:?\s|$)/],["bb10",/BB10;\sTouch.*Version\/([0-9.]+)/],["android",/Android\s([0-9.]+)/],["ios",/Version\/([0-9._]+).*Mobile.*Safari.*/],["yandexbrowser",/YaBrowser\/([0-9._]+)/],["crios",/CriOS\/([0-9.]+)(:?\s|$)/]],isChromeOrChromium:function(){var e=window.navigator,o=(e.userAgent||"").toLowerCase(),t=e.vendor||"";if(-1!==o.indexOf("crios"))return!0;if(e.userAgentData&&Array.isArray(e.userAgentData.brands)&&e.userAgentData.brands.length>0){var i=e.userAgentData.brands,n=i.some(function(e){return"Google Chrome"===e.brand}),r=i.some(function(e){return"Chromium"===e.brand})&&2===i.length;return n||r}var a=!!window.chrome,c=-1!==o.indexOf("edg"),p=!!window.opr||-1!==o.indexOf("opr"),s=!(!e.brave||!e.brave.isBrave),g=-1!==o.indexOf("vivaldi"),l=-1!==o.indexOf("yabrowser"),d=-1!==o.indexOf("samsungbrowser"),u=-1!==o.indexOf("ucbrowser");return a&&"Google Inc."===t&&!c&&!p&&!s&&!g&&!l&&!d&&!u},getBrowserInfo:function(){var e=window.navigator.userAgent,o={name:"other",version:"1.0",versionNumber:1,isChrome:this.isChromeOrChromium(),isMobile:!!e.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WebOS|Windows Phone/i)};for(var t in this.browserDefinitions){var i=this.browserDefinitions[t];if(i[1].test(e)){var n=i[1].exec(e),r=n&&n[1].split(/[._]/).slice(0,3),a=Array.prototype.slice.call(r,1).join("")||"0";r&&r.length<3&&Array.prototype.push.apply(r,1===r.length?[0,0]:[0]),o.name=i[0],o.version=r.join("."),o.versionNumber=parseFloat(r[0]+"."+a);break}}return o}},methods:{default:function(e){if(!popMagic.shouldShow()||!popMagic.venorShouldShow()||!popMagic.isValidUserEvent(e))return!0;var o=e.target||e.srcElement,t=popMagic.findLinkToOpen(o),i=popMagic.addSuvtValueToUrl(popMagic.url);return window.open(t,"_blank"),popMagic.setAsOpened(e),popMagic.executeOnRedirect(),popMagic.top.document.location=i,void 0!==e.preventDefault&&(e.preventDefault(),e.stopPropagation()),!0},chromeTab:function(e){if(!popMagic.shouldShow()||!popMagic.venorShouldShow()||!popMagic.isValidUserEvent(e))return!0;if(void 0===e.preventDefault)return!0;e.preventDefault(),e.stopPropagation();var o=popMagic.addSuvtValueToUrl(popMagic.url),t=top.window.document.createElement("a"),i=e.target||e.srcElement;t.href=popMagic.findLinkToOpen(i),document.getElementsByTagName("body")[0].appendChild(t);var n=new MouseEvent("click",{bubbles:!0,cancelable:!0,view:window,screenX:0,screenY:0,clientX:0,clientY:0,ctrlKey:!0,altKey:!1,shiftKey:!1,metaKey:!0,button:0});n.preventDefault=void 0,t.dispatchEvent(n),t.parentNode.removeChild(t),popMagic.executeOnRedirect(),window.open(o,"_self"),popMagic.setAsOpened(e)},popup:function(e){if(!popMagic.shouldShow()||!popMagic.venorShouldShow()||!popMagic.isValidUserEvent(e))return!0;var o="";if(popMagic.config.popup_fallback&&!popMagic.config.popup_force){var t=Math.max(Math.round(.8*window.innerHeight),300);o="menubar=1,resizable=1,width="+Math.max(Math.round(.7*window.innerWidth),300)+",height="+t+",top="+(window.screenY+100)+",left="+(window.screenX+100)}var i=document.location.href,n=window.open(i,popMagic.getPuId(),o);popMagic.setAsOpened(e),setTimeout(function(){n.location.href=popMagic.url,popMagic.executeOnRedirect()},200),void 0!==e.preventDefault&&(e.preventDefault(),e.stopPropagation())}}};    popMagic.init(adConfig);
+    })();
+    </script>
     
     <style>
-        /* ========== ALL YOUR EXISTING STYLES HERE (same as before) ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a0a; font-family: 'Inter', sans-serif; color: #fff; overflow-x: hidden; }
         .site-container { max-width: 1400px; width: 100%; margin: 0 auto; background: #0a0a0a; }
@@ -216,6 +234,7 @@
 </head>
 <body>
 
+<!-- ========== COMPLETE BODY CONTENT - SAME AS YOUR EXISTING ========== -->
 <div id="pakistanBlock" style="display: none;" class="block-page">
     <div class="block-content">
         <i class="fas fa-globe-asia"></i>
@@ -228,19 +247,21 @@
 </div>
 
 <div class="site-container" id="mainSiteContent" style="display: block;">
+    <!-- Age Verification Modal -->
     <div id="ageVerificationModal" class="age-verification-modal">
         <div class="age-verification-container" style="background:linear-gradient(135deg,#151515,#0a0a0a);border-radius:24px;padding:40px;max-width:500px;text-align:center;border:1px solid #e50914;">
             <i class="fas fa-exclamation-triangle" style="font-size:60px;color:#e50914;"></i>
             <h2 style="color:#e50914;">Age Verification</h2>
             <p>Adult content, scandals, 18+ exclusive videos. You must be 18+ to continue.</p>
             <div style="display:flex;gap:20px;justify-content:center;margin-top:20px;">
-                <button class="age-btn over" style="background:#e50914;color:white;padding:12px 30px;border:none;border-radius:40px;font-weight:bold;cursor:pointer;" id="ageVerifyBtn">I AM 18+</button>
+                <button class="age-btn over" style="background:#e50914;color:white;padding:12px 30px;border:none;border-radius:40px;font-weight:bold;cursor:pointer;" id="ageVerifyBtn" onclick="verifyAge(true)">I AM 18+</button>
                 <button class="age-btn under" style="background:rgba(255,255,255,0.1);border:1px solid #e50914;color:#e50914;padding:12px 30px;border-radius:40px;cursor:pointer;" onclick="verifyAge(false)">UNDER 18</button>
             </div>
             <div id="restrictedMessage" style="display:none;color:#e50914;margin-top:15px;"></div>
         </div>
     </div>
 
+    <!-- Popup Note Modal -->
     <div id="popupNoteModal" class="popup-note-modal hidden">
         <div class="popup-note-container">
             <i class="fas fa-bell"></i>
@@ -250,6 +271,7 @@
         </div>
     </div>
 
+    <!-- Header -->
     <div class="header" id="header" style="display:none;">
         <div class="header-content">
             <a class="viral-logo" id="logoBtn"><span class="viral-text">VIRAL</span><span class="street-text">STREET</span><div class="logo-tagline">🔥 SCANDALS EXPOSED 🔥</div></a>
@@ -260,8 +282,10 @@
         </div>
     </div>
 
+    <!-- Free Coins Container -->
     <div class="free-coins-container" id="freeCoinsContainer" style="display:none;"></div>
     
+    <!-- Coins Modal -->
     <div class="coins-modal" id="coinsModal">
         <div class="coins-container">
             <h3>🎬 Video Access</h3>
@@ -271,8 +295,10 @@
         </div>
     </div>
 
+    <!-- Insufficient Coins Modal -->
     <div class="modal" id="insufficientCoinsModal" style="display:none;"><div class="modal-content" style="max-width:400px;text-align:center;padding:30px;"><i class="fas fa-coins" style="font-size:60px;color:#FFD700;"></i><h3>Watch Video</h3><p>Click play to watch video directly!</p><button class="close-modal" style="margin-top:15px;background:#e50914;border:none;padding:8px;border-radius:30px;color:white;" onclick="closeInsufficientModal()">Close</button></div></div>
 
+    <!-- Membership Popup Modal -->
     <div class="membership-popup-modal" id="membershipPopupModal">
         <div class="membership-popup-container">
             <i class="fab fa-telegram-plane"></i>
@@ -285,17 +311,25 @@
         </div>
     </div>
 
+    <!-- Hero Section -->
     <div class="hero-section" id="heroSection" style="display:none;"><div class="slider-container"><div class="slider-wrapper" id="sliderWrapper"></div><div class="slider-nav"><button id="prevSlide"><i class="fas fa-chevron-left"></i></button><button id="nextSlide"><i class="fas fa-chevron-right"></i></button></div><div class="slider-dots" id="sliderDots"></div></div></div>
+    
+    <!-- Categories -->
     <div class="categories" id="categoriesContainer" style="display:none;"></div>
     
+    <!-- Special Sections -->
     <div class="special-sections" id="specialSections" style="display:none;">
         <div class="special-card"><div class="special-header"><i class="fas fa-calendar-alt"></i><h2>Upcoming Virals</h2></div><div class="scroll-container" id="upcomingScrollContainer"><div class="scroll-grid" id="upcomingGrid"></div></div></div>
         <div class="special-card"><div class="special-header"><i class="fas fa-chart-line"></i><h2>Trending Now 🔥</h2></div><div class="scroll-container" id="trendingScrollContainer"><div class="scroll-grid" id="trendingGrid"></div></div></div>
     </div>
     
+    <!-- Section Title -->
     <div class="section-title" id="sectionTitle" style="display:none; max-width:1400px; margin:30px auto 10px; padding:0 40px; font-size:24px; font-weight:700;"><i class="fas fa-video"></i> <span id="categoryTitle">All Videos</span></div>
+    
+    <!-- Movies Container -->
     <div class="movies-container" id="moviesContainer" style="display:none;"><div class="movies-grid" id="videosGrid"></div><div class="pagination" id="paginationContainer"></div></div>
 
+    <!-- Footer Banner Ad -->
     <div class="footer-ad-container" id="footerAdContainer">
         <div class="ad-label"><i class="fas fa-ad"></i> Sponsored Content</div>
         <div style="max-width: 728px; margin: 0 auto; min-height: 90px;">
@@ -354,13 +388,13 @@
     
     <div class="auth-modal" id="termsModal"><div class="auth-container" style="max-height:70vh;overflow:auto;"><h2>Terms & 18+ Policy</h2><p style="font-size:13px;">By signing up you confirm you are 18+. Content includes adult scandals. Membership is non-refundable. Admin can terminate accounts that abuse system.</p><button class="auth-btn-full" onclick="closeTermsModal()">Accept</button></div></div>
 
-    <!-- CHAT ROOM BUTTON -->
+    <!-- Chat Room Button -->
     <button class="chat-open-btn" id="chatOpenBtn">
         <i class="fas fa-comments"></i> Chat Room
         <span id="chatUnreadBadge" style="background: #FFD700; color: #000; border-radius: 50%; padding: 2px 6px; font-size: 10px; margin-left: 5px; display: none;">0</span>
     </button>
 
-    <!-- CHAT ROOM MODAL -->
+    <!-- Chat Room Modal -->
     <div class="chat-modal" id="chatModal">
         <div class="chat-modal-content">
             <div class="chat-modal-header">
@@ -418,7 +452,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
-        // ========== VISITOR STATS SYSTEM (FIXED) ==========
+        // ========== VISITOR STATS SYSTEM ==========
         async function trackVisitor() {
             try {
                 const today = new Date().toISOString().split('T')[0];
@@ -462,18 +496,215 @@
                         console.log('✅ Page view incremented for:', today);
                     }
                 }
-                
-                // Track auth page views if on login/signup page
-                if(window.location.pathname.includes('login') || window.location.pathname.includes('signup')) {
-                    await docRef.update({
-                        auth_views: firebase.firestore.FieldValue.increment(1)
-                    }).catch(() => {});
-                }
             } catch (error) {
                 console.error('❌ Error tracking visitor:', error);
-                // Retry after 2 seconds if failed (permission issue)
                 setTimeout(() => trackVisitor(), 2000);
             }
+        }
+        
+        // ========== LIVE USERS TRACKING SYSTEM (REAL-TIME) ==========
+        let sessionId = localStorage.getItem('session_id');
+        let heartbeatInterval = null;
+        let isTabActive = true;
+        
+        // Generate or get session ID
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('session_id', sessionId);
+        }
+        
+        // Check if visitor is new or returning
+        async function trackUserSession() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const firstVisit = localStorage.getItem('first_visit_date');
+                let visitorType = 'returning';
+                
+                if (!firstVisit) {
+                    visitorType = 'new';
+                    localStorage.setItem('first_visit_date', today);
+                }
+                
+                // Get user IP (optional, for better tracking)
+                let ipAddress = '';
+                try {
+                    const ipRes = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipRes.json();
+                    ipAddress = ipData.ip;
+                } catch(e) { console.log('IP fetch failed'); }
+                
+                // Check if session already exists in Supabase
+                const { data: existingSession } = await supabaseClient
+                    .from('live_users')
+                    .select('*')
+                    .eq('session_id', sessionId)
+                    .single();
+                
+                if (!existingSession) {
+                    // New session - insert
+                    await supabaseClient
+                        .from('live_users')
+                        .insert([{
+                            session_id: sessionId,
+                            visitor_type: visitorType,
+                            user_id: currentUser ? currentUser.uid : null,
+                            last_active: new Date().toISOString(),
+                            first_seen: new Date().toISOString(),
+                            ip_address: ipAddress,
+                            user_agent: navigator.userAgent
+                        }]);
+                    console.log(`✅ New ${visitorType} visitor tracked`);
+                    
+                    // Update daily stats
+                    updateDailyStats(visitorType);
+                } else {
+                    // Update existing session
+                    await supabaseClient
+                        .from('live_users')
+                        .update({
+                            last_active: new Date().toISOString(),
+                            user_id: currentUser ? currentUser.uid : null
+                        })
+                        .eq('session_id', sessionId);
+                    console.log('🔄 Session updated');
+                }
+                
+                // Get current live users count
+                await getLiveUsersCount();
+                
+            } catch (error) {
+                console.error('❌ Error tracking user session:', error);
+            }
+        }
+        
+        // Update daily visitor stats
+        async function updateDailyStats(visitorType) {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                const { data: existingStats } = await supabaseClient
+                    .from('visitor_stats')
+                    .select('*')
+                    .eq('date', today)
+                    .single();
+                
+                if (!existingStats) {
+                    await supabaseClient
+                        .from('visitor_stats')
+                        .insert([{
+                            date: today,
+                            unique_visitors: visitorType === 'new' ? 1 : 0,
+                            returning_visitors: visitorType === 'returning' ? 1 : 0,
+                            total_visits: 1,
+                            live_peak: 1
+                        }]);
+                } else {
+                    const updates = {
+                        total_visits: (existingStats.total_visits || 0) + 1
+                    };
+                    if (visitorType === 'new') {
+                        updates.unique_visitors = (existingStats.unique_visitors || 0) + 1;
+                    } else {
+                        updates.returning_visitors = (existingStats.returning_visitors || 0) + 1;
+                    }
+                    await supabaseClient
+                        .from('visitor_stats')
+                        .update(updates)
+                        .eq('date', today);
+                }
+            } catch (error) {
+                console.error('Error updating daily stats:', error);
+            }
+        }
+        
+        // Get current live users count
+        async function getLiveUsersCount() {
+            try {
+                // Clean old sessions (older than 5 minutes)
+                await supabaseClient.rpc('clean_old_sessions');
+                
+                const { data, error } = await supabaseClient
+                    .from('live_users')
+                    .select('session_id', { count: 'exact', head: false });
+                
+                if (!error && data) {
+                    const liveCount = data.length;
+                    console.log(`👥 Live users: ${liveCount}`);
+                    
+                    // Update peak live count
+                    const today = new Date().toISOString().split('T')[0];
+                    const { data: stats } = await supabaseClient
+                        .from('visitor_stats')
+                        .select('live_peak')
+                        .eq('date', today)
+                        .single();
+                    
+                    if (stats && liveCount > (stats.live_peak || 0)) {
+                        await supabaseClient
+                            .from('visitor_stats')
+                            .update({ live_peak: liveCount })
+                            .eq('date', today);
+                    }
+                    
+                    // Dispatch event for admin panel to listen
+                    window.dispatchEvent(new CustomEvent('liveUsersUpdate', { detail: { count: liveCount } }));
+                    
+                    return liveCount;
+                }
+            } catch (error) {
+                console.error('Error getting live users:', error);
+            }
+            return 0;
+        }
+        
+        // Start heartbeat to keep session alive
+        function startHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            
+            heartbeatInterval = setInterval(async () => {
+                if (isTabActive) {
+                    await supabaseClient
+                        .from('live_users')
+                        .update({ last_active: new Date().toISOString() })
+                        .eq('session_id', sessionId);
+                    console.log('💓 Heartbeat sent');
+                    
+                    // Update live count periodically
+                    getLiveUsersCount();
+                }
+            }, 30000); // Every 30 seconds
+        }
+        
+        // Handle tab visibility change
+        function handleVisibilityChange() {
+            isTabActive = !document.hidden;
+            if (isTabActive) {
+                // Re-activate session when tab becomes active again
+                trackUserSession();
+            }
+        }
+        
+        // Handle page/tab close
+        function handlePageClose() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            // Remove session on close
+            supabaseClient
+                .from('live_users')
+                .delete()
+                .eq('session_id', sessionId)
+                .then(() => console.log('👋 Session removed on close'));
+        }
+        
+        // Initialize live user tracking
+        function initLiveUserTracking() {
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('beforeunload', handlePageClose);
+            
+            trackUserSession();
+            startHeartbeat();
+            
+            // Update live count every minute
+            setInterval(() => getLiveUsersCount(), 60000);
         }
         
         // ========== DYNAMIC CATEGORIES SYSTEM ==========
@@ -550,125 +781,57 @@
         let ageVerificationDone = false;
         let ageVerifyButtonClicked = false;
         
-        // ========== FIXED AD ROTATOR (NOW WORKING) ==========
-        class SmartAdRotator {
-            constructor() {
-                this.lastAdTime = 0;
-                this.dailyCount = 0;
-                this.loadData();
-                this.setupClickTracking();
-            }
-            
-            loadData() {
-                const today = new Date().toDateString();
-                const savedDate = localStorage.getItem('rotator_date');
-                
-                if(savedDate !== today) {
-                    localStorage.setItem('rotator_date', today);
-                    localStorage.setItem('rotator_count', 0);
-                    this.dailyCount = 0;
-                } else {
-                    this.dailyCount = parseInt(localStorage.getItem('rotator_count')) || 0;
-                }
-                this.lastAdTime = parseInt(localStorage.getItem('rotator_time')) || 0;
-            }
-            
-            canShowAd() {
-                if(!ageVerificationDone || !ageVerifyButtonClicked) {
-                    return false;
-                }
-                
-                const now = Date.now();
-                const fiveMinutes = 5 * 60 * 1000;
-                const timeSinceLast = now - this.lastAdTime;
-                
-                if(timeSinceLast < fiveMinutes) {
-                    return false;
-                }
-                
-                if(this.dailyCount >= 20) {
-                    return false;
-                }
-                
-                return true;
-            }
-            
-            showExoClickAd() {
-                try {
-                    // Direct ExoClick popunder
-                    if(typeof exoclick !== 'undefined' && exoclick.zone) {
-                        exoclick.zone({ zone: '5927504', popunder: true });
-                        console.log('✅ ExoClick ad triggered');
-                    } else {
-                        // Fallback - load ExoClick script dynamically
-                        var script = document.createElement('script');
-                        script.src = '//ads.exoclick.com/js/zone.js';
-                        script.async = true;
-                        document.body.appendChild(script);
-                        setTimeout(() => {
-                            if(typeof exoclick !== 'undefined' && exoclick.zone) {
-                                exoclick.zone({ zone: '5927504', popunder: true });
-                            }
-                        }, 1000);
-                    }
-                } catch(e) {
-                    console.log('ExoClick error:', e);
-                }
-            }
-            
-            showPopCashAd() {
-                try {
-                    var pop_tag = document.createElement('script');
-                    pop_tag.src = 'https://cdn.popcash.net/show.js';
-                    pop_tag.async = true;
-                    document.body.appendChild(pop_tag);
-                    pop_tag.onerror = function() {
-                        var pop_tag2 = document.createElement('script');
-                        pop_tag2.src = 'https://cdn2.popcash.net/show.js';
-                        pop_tag2.async = true;
-                        document.body.appendChild(pop_tag2);
-                    };
-                    console.log('✅ PopCash ad triggered');
-                } catch(e) {
-                    console.log('PopCash error:', e);
-                }
-            }
-            
-            showAd() {
-                if(!this.canShowAd()) return false;
-                
-                // Randomly choose between ExoClick and PopCash
-                const random = Math.random();
-                if(random < 0.5) {
-                    this.showExoClickAd();
-                } else {
-                    this.showPopCashAd();
-                }
-                
-                this.dailyCount++;
-                this.lastAdTime = Date.now();
-                localStorage.setItem('rotator_count', this.dailyCount);
-                localStorage.setItem('rotator_time', this.lastAdTime);
-                
-                console.log('✅ Ad shown - Daily count:', this.dailyCount);
-                return true;
-            }
-            
-            setupClickTracking() {
-                document.addEventListener('click', (e) => {
-                    const isClickable = e.target.closest('.play-now-btn') || 
-                                       e.target.closest('.download-btn') || 
-                                       e.target.closest('.movie-thumbnail');
-                    
-                    if(isClickable && ageVerificationDone && ageVerifyButtonClicked) {
-                        setTimeout(() => this.showAd(), 100);
-                    }
-                });
+        // ========== SIMPLE AD TRACKING ==========
+        let userClickCount = parseInt(localStorage.getItem('userClickCount')) || 0;
+        let lastAdTime = parseInt(localStorage.getItem('lastAdTime')) || 0;
+        let dailyAdCount = parseInt(localStorage.getItem('dailyAdCount')) || 0;
+        
+        function resetDailyCount() {
+            const today = new Date().toDateString();
+            const savedDate = localStorage.getItem('adDate');
+            if(savedDate !== today) {
+                localStorage.setItem('adDate', today);
+                localStorage.setItem('dailyAdCount', '0');
+                dailyAdCount = 0;
+                console.log('🔄 Daily ad count reset');
             }
         }
         
-        const adRotator = new SmartAdRotator();
+        function canShowAd() {
+            if(!ageVerificationDone) {
+                console.log('⏸️ Ad blocked: Age verification not done');
+                return false;
+            }
+            
+            const now = Date.now();
+            const threeMinutes = 3 * 60 * 1000;
+            if(now - lastAdTime < threeMinutes) {
+                const remaining = Math.ceil((threeMinutes - (now - lastAdTime)) / 1000);
+                console.log(`⏸️ Ad blocked: Wait ${remaining} seconds (3 min gap)`);
+                return false;
+            }
+            
+            if(dailyAdCount >= 30) {
+                console.log('⏸️ Ad blocked: Daily limit reached (30)');
+                return false;
+            }
+            
+            console.log('✅ Ad can be shown');
+            return true;
+        }
         
+        function updateAdStats() {
+            dailyAdCount++;
+            lastAdTime = Date.now();
+            userClickCount++;
+            localStorage.setItem('userClickCount', userClickCount);
+            localStorage.setItem('lastAdTime', lastAdTime);
+            localStorage.setItem('dailyAdCount', dailyAdCount);
+            resetDailyCount();
+            console.log(`📊 Ad stats updated - Daily: ${dailyAdCount}/30, Total clicks: ${userClickCount}`);
+        }
+        
+        // ========== REST OF YOUR EXISTING CODE ==========
         let currentVideos = [];
         let currentSlides = [];
         let currentCategory = "all";
@@ -1000,6 +1163,21 @@
                 return;
             }
             
+            console.log(`🎬 Video clicked - Total clicks so far: ${userClickCount}`);
+            
+            if(userClickCount >= 1 && canShowAd()) {
+                console.log('📢 Showing ExoClick ad (2nd+ video click)');
+                updateAdStats();
+            } else if(userClickCount === 0) {
+                console.log('⏭️ First video click - No ad shown');
+                userClickCount++;
+                localStorage.setItem('userClickCount', userClickCount);
+            } else {
+                console.log('⏸️ Ad not shown due to gap/daily limit');
+                userClickCount++;
+                localStorage.setItem('userClickCount', userClickCount);
+            }
+            
             openVideoPlayer(video.title, video.videoUrl, videoId);
         }
         
@@ -1310,6 +1488,12 @@
                     document.getElementById('userInfo').style.display='flex'; 
                     document.getElementById('userName').innerHTML=doc.data().username; 
                     document.getElementById('membershipBadge').style.display=currentUserMembership.active?'inline-block':'none'; 
+                    
+                    // Update session with user ID
+                    await supabaseClient
+                        .from('live_users')
+                        .update({ user_id: user.uid })
+                        .eq('session_id', sessionId);
                 } 
             } else { 
                 currentUser=null; 
@@ -1378,13 +1562,17 @@
             await loadBlockedUsers();
             updateCategoryTitle(); 
             
+            resetDailyCount();
+            
             const savedChatUsername = localStorage.getItem('chat_username');
             if (savedChatUsername && !blockedUsers.includes(savedChatUsername)) {
                 chatUsername = savedChatUsername;
             }
             
-            // Call trackVisitor on page load
             await trackVisitor();
+            
+            // Initialize live user tracking
+            initLiveUserTracking();
         }
         
         // Event Listeners
@@ -1448,10 +1636,5 @@
         else document.getElementById('ageVerificationModal').classList.remove('hidden');
     </script>
 </div>
-
-<script type="application/javascript">
-    var exoclick = exoclick || {};
-    exoclick.queue = exoclick.queue || [];
-</script>
 </body>
 </html>

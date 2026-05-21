@@ -296,8 +296,8 @@
             background: #ff3333;
             transform: scale(1.1);
         }
-        /* Block page styles for Pakistan IP */
-        .block-page-overlay {
+        /* Instant Block Page Styles */
+        .instant-block-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -310,7 +310,7 @@
             justify-content: center;
             backdrop-filter: blur(8px);
         }
-        .block-page-container {
+        .instant-block-container {
             text-align: center;
             padding: 45px 35px;
             max-width: 550px;
@@ -319,23 +319,18 @@
             border-radius: 32px;
             border: 1px solid rgba(229,9,20,0.4);
             box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
-            animation: blockFadeIn 0.5s ease-out;
+            animation: instantFadeIn 0.3s ease-out;
         }
-        @keyframes blockFadeIn {
-            from { opacity: 0; transform: scale(0.95) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes instantFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
-        .block-icon {
+        .instant-block-icon {
             font-size: 85px;
             color: #e50914;
             margin-bottom: 25px;
-            animation: blockPulse 2s infinite;
         }
-        @keyframes blockPulse {
-            0%, 100% { transform: scale(1); opacity: 1; text-shadow: 0 0 0px #e50914; }
-            50% { transform: scale(1.08); opacity: 0.9; text-shadow: 0 0 15px #e50914; }
-        }
-        .block-page-container h1 {
+        .instant-block-container h1 {
             font-size: 52px;
             font-weight: 800;
             background: linear-gradient(135deg, #e50914, #ff4d4d);
@@ -345,119 +340,119 @@
             margin-bottom: 18px;
             letter-spacing: -1px;
         }
-        .block-main-message {
+        .instant-block-message {
             font-size: 18px;
             line-height: 1.6;
             color: #ddd;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-weight: 500;
         }
-        .block-sub-message {
+        .instant-block-submessage {
             font-size: 15px;
             color: #aaa;
-            margin-bottom: 25px;
             line-height: 1.5;
         }
-        .block-footer-note {
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 20px;
-            margin-top: 10px;
-        }
-        .block-footer-note i {
-            color: #e50914;
-            margin-right: 6px;
-        }
         @media (max-width: 480px) {
-            .block-page-container h1 { font-size: 38px; }
-            .block-main-message { font-size: 16px; }
-            .block-icon { font-size: 65px; }
-            .block-page-container { padding: 35px 25px; }
+            .instant-block-container h1 { font-size: 38px; }
+            .instant-block-message { font-size: 16px; }
+            .instant-block-icon { font-size: 65px; }
+            .instant-block-container { padding: 35px 25px; }
         }
     </style>
 </head>
 <body>
-<!-- PAKISTAN IP BLOCK - Working Code (Complete) -->
+<!-- ========== INSTANT PAKISTAN IP BLOCK - SYNCHRONOUS & FAST ========== -->
 <script>
     (function() {
-        // Block function - shows professional access denied page
-        function blockPakistanAccess() {
-            if (document.getElementById('pakistanBlockOverlay')) return;
+        // Block function - shows professional access denied page immediately
+        function instantBlockPakistan() {
+            if (document.getElementById('instantBlockOverlay')) return;
             
+            // Completely wipe out body and show block page instantly
             const overlay = document.createElement('div');
-            overlay.id = 'pakistanBlockOverlay';
-            overlay.className = 'block-page-overlay';
+            overlay.id = 'instantBlockOverlay';
+            overlay.className = 'instant-block-overlay';
             overlay.innerHTML = `
-                <div class="block-page-container">
-                    <div class="block-icon">
+                <div class="instant-block-container">
+                    <div class="instant-block-icon">
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
                     <h1>Access Denied</h1>
-                    <div class="block-main-message">
-                        This site is not available in your region.
+                    <div class="instant-block-message">
+                        This Site is Not Available in Your Region
                     </div>
-                    <div class="block-sub-message">
-                        We apologize, but due to regional restrictions,<br>
-                        access from Pakistan is currently blocked.
-                    </div>
-                    <div class="block-footer-note">
-                        <i class="fas fa-globe"></i> This content is not available in your geographic location.
+                    <div class="instant-block-submessage">
+                        Due to country restrictions, this website has been blocked in your region.<br>
+                        We apologize for the inconvenience.
                     </div>
                 </div>
             `;
+            document.body.innerHTML = '';
             document.body.appendChild(overlay);
             
-            // Hide all main content
-            const siteContainer = document.querySelector('.site-container');
-            if (siteContainer) siteContainer.style.display = 'none';
-            
-            const ageModal = document.getElementById('ageVerificationModal');
-            if (ageModal) ageModal.style.display = 'none';
-            
-            const allModals = document.querySelectorAll('.modal, .auth-modal, .popup-note-modal, .coins-modal, .membership-popup-modal');
-            allModals.forEach(modal => {
-                if (modal) modal.style.display = 'none';
-            });
+            // Prevent any further execution
+            throw new Error('Access Denied - Region Blocked');
         }
         
-        // Method 1: Primary - Fetch IP from ipapi.co (most reliable)
-        fetch('https://ipapi.co/country/')
+        // Method 1: Synchronous-like check using fastest API (ip-api.com)
+        fetch('https://ip-api.com/json/?fields=countryCode', { cache: 'no-store' })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.countryCode === 'PK') {
+                    instantBlockPakistan();
+                }
+            })
+            .catch(() => {});
+        
+        // Method 2: ipapi.co (backup)
+        fetch('https://ipapi.co/country/', { cache: 'no-store' })
             .then(res => res.text())
             .then(country => {
                 if (country === 'PK') {
-                    blockPakistanAccess();
+                    instantBlockPakistan();
                 }
             })
-            .catch(err => {
-                // Method 2: Fallback 1 - Check timezone (Pakistan timezone detection)
-                try {
-                    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                    if (timezone === 'Asia/Karachi') {
-                        blockPakistanAccess();
-                    }
-                } catch(e) {}
-                
-                // Method 3: Fallback 2 - Check via cloudflare header if available
-                const cfMeta = document.querySelector('meta[name="cf-country"]');
-                if (cfMeta && cfMeta.content === 'PK') {
-                    blockPakistanAccess();
-                }
-            });
+            .catch(() => {});
         
-        // Method 4: Alternative API for better coverage
-        setTimeout(() => {
-            if (!document.getElementById('pakistanBlockOverlay')) {
-                fetch('https://ipapi.co/json/')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && data.country_code === 'PK') {
-                            blockPakistanAccess();
-                        }
-                    })
-                    .catch(() => {});
+        // Method 3: Cloudflare trace (fastest if behind CF)
+        fetch('https://www.cloudflare.com/cdn-cgi/trace', { cache: 'no-store' })
+            .then(res => res.text())
+            .then(data => {
+                const match = data.match(/loc=([A-Z]{2})/);
+                if (match && match[1] === 'PK') {
+                    instantBlockPakistan();
+                }
+            })
+            .catch(() => {});
+        
+        // Method 4: ipwho.is (backup)
+        fetch('https://ipwho.is/', { cache: 'no-store' })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.country_code === 'PK') {
+                    instantBlockPakistan();
+                }
+            })
+            .catch(() => {});
+        
+        // Method 5: Timezone check (instant, no network call)
+        try {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (timezone === 'Asia/Karachi') {
+                instantBlockPakistan();
             }
-        }, 500);
+        } catch(e) {}
+        
+        // Method 6: Check for Pakistan Standard Time offset (UTC+5)
+        const date = new Date();
+        const offset = -date.getTimezoneOffset();
+        if (offset === 300) {
+            // UTC+5 could be Pakistan, but also other countries - less reliable
+            // Only trigger if we also have .pk TLD in referrer or other clues
+            if (window.location.hostname.includes('.pk')) {
+                instantBlockPakistan();
+            }
+        }
     })();
 </script>
 <div class="site-container">

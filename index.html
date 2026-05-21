@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -257,7 +256,6 @@
         }
         @media (max-width: 1200px) { .site-container { max-width: 100%; } }
         @media (max-width:768px) { .header { padding: 12px 20px; } .viral-text, .street-text { font-size: 32px; } .slide-title { font-size: 24px; max-width: 100%; } .movies-grid { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 15px; } .free-coins-circle { width: 60px; height: 60px; } .stat-circle { width: 80px; height: 80px; } .stat-number { font-size: 18px; } .recommended-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } .page-btn { padding: 6px 12px; min-width: 35px; } }
-        /* Ad Banner Popup */
         .ad-banner-popup {
             position: fixed;
             bottom: 20px;
@@ -371,7 +369,7 @@
     <div class="section-title" id="sectionTitle" style="display:none; max-width:1400px; margin:30px auto 10px; padding:0 40px; font-size:24px; font-weight:700;"><i class="fas fa-video"></i> <span id="categoryTitle">All Videos</span></div>
     <div class="movies-container" id="moviesContainer" style="display:none;"><div class="movies-grid" id="videosGrid"></div><div class="pagination" id="paginationContainer"></div></div>
 
-    <!-- FOOTER BANNER AD - ExoClick (existing working ad) -->
+    <!-- FOOTER BANNER AD - ExoClick -->
     <div class="footer-ad-container" id="footerAdContainer">
         <div class="ad-label"><i class="fas fa-ad"></i> Sponsored Content</div>
         <div style="max-width: 728px; margin: 0 auto; min-height: 90px;">
@@ -459,7 +457,6 @@
 
     <script>
         // ========== PAGE NUMBER AD TRIGGER SYSTEM ==========
-        // Per user daily limit: 15 ads
         const PAGE_AD_LIMIT = 15;
         
         function getAdUserIdentifier() {
@@ -498,7 +495,6 @@
             return getTodayAdCount() < PAGE_AD_LIMIT;
         }
         
-        // Trigger the new ad script on page number click
         function triggerPageNumberAd() {
             if (!canShowPageAd()) {
                 showToast(`⚠️ Daily ad limit (${PAGE_AD_LIMIT}) reached. Tomorrow more ads!`, true);
@@ -508,7 +504,6 @@
             const newCount = incrementAdCount();
             showToast(`📢 Loading ad (${newCount}/${PAGE_AD_LIMIT})...`);
             
-            // Create visible ad banner at bottom
             const adBanner = document.createElement('div');
             adBanner.className = 'ad-banner-popup';
             adBanner.id = 'pageAdBanner_' + Date.now();
@@ -521,7 +516,6 @@
             
             const adInner = adBanner.querySelector('[id^="pageAdInner"]');
             
-            // Load the ad script properly
             const adScript = document.createElement('script');
             adScript.async = true;
             adScript.type = "application/javascript";
@@ -542,7 +536,6 @@
             };
             document.head.appendChild(adScript);
             
-            // Auto remove after 18 seconds
             setTimeout(() => {
                 if (adBanner && adBanner.remove) adBanner.remove();
             }, 18000);
@@ -550,17 +543,13 @@
             return true;
         }
         
-        // Store original goToPage function
         const originalGoToPageFunction = window.goToPage;
         
-        // Override goToPage to trigger ad first then change page
         window.goToPage = function(page) {
             if (page < 1 || page > totalPages) return;
             
-            // Trigger ad first
             triggerPageNumberAd();
             
-            // Then change page after short delay to ensure ad triggers
             setTimeout(() => {
                 currentPage = page;
                 renderVideosWithPagination();
@@ -569,24 +558,18 @@
             }, 50);
         };
         
-        // Attach click listeners to all page buttons
         function attachPaginationAdTrigger() {
             const allPageBtns = document.querySelectorAll('.page-btn');
             allPageBtns.forEach(btn => {
                 if (btn._adTriggerAttached) return;
                 btn._adTriggerAttached = true;
                 
-                // Store original onclick
-                const originalClick = btn.onclick;
-                
-                // Add new click listener that triggers ad
                 btn.addEventListener('click', function(e) {
                     triggerPageNumberAd();
                 });
             });
         }
         
-        // Watch for pagination container changes
         function observePaginationForAds() {
             const container = document.getElementById('paginationContainer');
             if (!container) return;
@@ -620,7 +603,6 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
         
-        // Global Variables
         let currentVideos = [];
         let currentSlides = [];
         let currentCategory = "all";
@@ -635,7 +617,6 @@
         let autoInterval;
         let isVideoModalOpen = false;
         
-        // ========== VISITOR STATS SYSTEM ==========
         async function trackVisitor() {
             const today = new Date().toISOString().split('T')[0];
             const visitorId = localStorage.getItem('visitor_id');
@@ -771,7 +752,6 @@
             
             container.innerHTML = html;
             
-            // Attach ad trigger to new buttons
             setTimeout(attachPaginationAdTrigger, 50);
         }
         

@@ -258,7 +258,6 @@
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
-<!-- ========== PAKISTAN IP BLOCK ========== -->
 <script>
     (function() {
         let blockTriggered = false;
@@ -358,7 +357,7 @@
     <div class="movies-container" id="moviesContainer" style="display:none;"><div class="movies-grid" id="videosGrid"></div><div class="pagination" id="paginationContainer"></div></div>
     <div class="footer-ad-container" id="footerAdContainer">
         <div class="ad-label"><i class="fas fa-ad"></i> Sponsored Content</div>
-        <div style="max-width: 728px; margin: 0 auto; min-height: 90px;"></div>
+        <div style="max-width: 728px; margin: 0 auto; min-height: 90px;" id="bannerAdContainer"></div>
     </div>
     <div class="modal" id="videoModal">
         <div class="modal-content">
@@ -427,7 +426,6 @@
     })();
     </script>
     <script>
-        // ========== SUPABASE & FIREBASE SETUP ==========
         const SUPABASE_URL = 'https://gbbugdhizwrrmrvtytec.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiYnVnZGhpendycm1ydnR5dGVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODEyMTEsImV4cCI6MjA5NDM1NzIxMX0.S5Lp7tyzCjIvFQovX0ntNhgc81KW5MNUoH5CHFZQdxU';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -457,165 +455,125 @@
         let isVideoModalOpen = false;
         let ageVerificationDone = false;
         
-        // ========== DIRECT AD LINK SYSTEM (30 ADS/DAY, 1 MINUTE COOLDOWN) ==========
-        const DIRECT_AD_URL = "https://go.easrv.cl/fpa.go?spaceid=8205325";
-        const AD_LIMIT_PER_DAY = 30;
-        const AD_COOLDOWN_MS = 60 * 1000;
+        let sliderClickCount = 0;
+        let videoClickCount = 0;
+        let paginationClickCount = 0;
+        let userDailyData = JSON.parse(localStorage.getItem('userAdData')) || { slider: {}, video: {}, pagination: {} };
         
-        let lastAdTime = localStorage.getItem('lastAdTime') ? parseInt(localStorage.getItem('lastAdTime')) : 0;
-        
-        function getAdUserIdentifier() {
-            if (currentUser && currentUser.uid) return `ad_user_${currentUser.uid}`;
-            let deviceId = localStorage.getItem('direct_ad_id');
-            if (!deviceId) {
-                deviceId = 'ad_guest_' + Math.random().toString(36).substr(2, 16) + '_' + Date.now();
-                localStorage.setItem('direct_ad_id', deviceId);
-            }
-            return deviceId;
+        function getUserDailyKey(type) {
+            const today = new Date().toISOString().split('T')[0];
+            const userId = currentUser ? currentUser.uid : 'guest_' + (localStorage.getItem('guestId') || (localStorage.setItem('guestId', 'g'+Date.now()+Math.random()), localStorage.getItem('guestId')));
+            return `${type}_${userId}_${today}`;
         }
         
-        function getTodayString() { return new Date().toISOString().split('T')[0]; }
-        
-        function getTodayAdCount() {
-            const userId = getAdUserIdentifier();
-            const today = getTodayString();
-            const key = `direct_ad_count_${userId}_${today}`;
-            return parseInt(localStorage.getItem(key)) || 0;
+        function getTodayCount(type) {
+            const key = getUserDailyKey(type);
+            return userDailyData[type]?.[key] || 0;
         }
         
-        function incrementAdCount() {
-            const userId = getAdUserIdentifier();
-            const today = getTodayString();
-            const key = `direct_ad_count_${userId}_${today}`;
-            let current = getTodayAdCount();
-            current++;
-            localStorage.setItem(key, current);
-            return current;
+        function incrementCount(type) {
+            const key = getUserDailyKey(type);
+            if (!userDailyData[type]) userDailyData[type] = {};
+            userDailyData[type][key] = (userDailyData[type][key] || 0) + 1;
+            localStorage.setItem('userAdData', JSON.stringify(userDailyData));
         }
         
-        function canShowDirectAd() {
-            if (getTodayAdCount() >= AD_LIMIT_PER_DAY) {
-                showToast(`⚠️ Daily ad limit (${AD_LIMIT_PER_DAY}) reached. Come back tomorrow!`, true);
-                return false;
+        async function executeAd(ad) {
+            if (!ad || !ad.enabled) return false;
+            const todayCount = getTodayCount(ad.type + '_' + ad.id);
+            if (todayCount >= (ad.dailyLimit || 10)) return false;
+            if (ad.adType === 'script' && ad.scriptCode) {
+                const script = document.createElement('script');
+                script.textContent = ad.scriptCode;
+                document.body.appendChild(script);
+                setTimeout(() => script.remove(), 100);
+            } else if (ad.adType === 'zoneId' && ad.zoneId) {
+                const script = document.createElement('script');
+                script.src = `https://a.pemsrv.com/popunder1000.js?zoneid=${ad.zoneId}`;
+                document.body.appendChild(script);
+            } else if (ad.adType === 'directLink' && ad.directLink) {
+                window.open(ad.directLink, '_blank');
             }
-            const now = Date.now();
-            const timeSinceLastAd = now - lastAdTime;
-            if (lastAdTime > 0 && timeSinceLastAd < AD_COOLDOWN_MS) {
-                const remainingSeconds = Math.ceil((AD_COOLDOWN_MS - timeSinceLastAd) / 1000);
-                showToast(`⏱️ Please wait ${remainingSeconds} second(s) before next ad`, true);
-                return false;
-            }
+            incrementCount(ad.type + '_' + ad.id);
             return true;
         }
         
-        function showDirectAd() {
-            if (!canShowDirectAd()) return false;
-            const newCount = incrementAdCount();
-            lastAdTime = Date.now();
-            localStorage.setItem('lastAdTime', lastAdTime);
-            showToast(`📢 Opening ad (${newCount}/${AD_LIMIT_PER_DAY})...`);
-            window.open(DIRECT_AD_URL, '_blank');
-            return true;
+        async function loadAds() {
+            const { data: sliderAds } = await supabaseClient.from('slider_ads').select('*');
+            const { data: videoAds } = await supabaseClient.from('video_click_ads').select('*');
+            const { data: paginationAds } = await supabaseClient.from('pagination_ads').select('*');
+            const { data: bannerAds } = await supabaseClient.from('banner_ads').select('*');
+            window.sliderAds = sliderAds || [];
+            window.videoAds = videoAds || [];
+            window.paginationAds = paginationAds || [];
+            renderBannerAds(bannerAds || []);
         }
         
-        // ========== VIDEO AD TRIGGER (First play + every 60 seconds) ==========
-        let lastVideoAdTime = 0;
-        let isFirstVideoPlay = true;
-        let currentVideoElement = null;
-        
-        function triggerVideoAd() {
-            const now = Date.now();
-            const timeSinceLastVideoAd = now - lastVideoAdTime;
-            if (lastVideoAdTime === 0 || timeSinceLastVideoAd >= AD_COOLDOWN_MS) {
-                if (showDirectAd()) {
-                    lastVideoAdTime = Date.now();
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        function setupVideoAdTracking(videoElement) {
-            if (!videoElement) return;
-            if (currentVideoElement === videoElement) return;
-            currentVideoElement = videoElement;
-            
-            const handlePlay = function() {
-                if (isFirstVideoPlay) {
-                    isFirstVideoPlay = false;
-                    triggerVideoAd();
-                } else {
-                    const now = Date.now();
-                    if (lastVideoAdTime === 0 || (now - lastVideoAdTime) >= AD_COOLDOWN_MS) {
-                        triggerVideoAd();
-                    }
-                }
-            };
-            
-            videoElement.removeEventListener('play', handlePlay);
-            videoElement.addEventListener('play', handlePlay);
-        }
-        
-        // Preserve original openVideoPlayer
-        const originalOpenVideoPlayer = window.openVideoPlayer;
-        
-        window.openVideoPlayer = function(title, url, videoId) {
-            const modal = document.getElementById('videoModal');
-            const titleEl = document.getElementById('modalTitle');
-            const sourceEl = document.getElementById('videoSource');
-            const videoEl = document.getElementById('videoPlayer');
-            if(titleEl) titleEl.innerHTML = title;
-            if(sourceEl) sourceEl.src = url;
-            if(videoEl) {
-                videoEl.load();
-                setupVideoAdTracking(videoEl);
-                setTimeout(() => {
-                    videoEl.play().catch(e => console.log('Play error:', e));
-                }, 100);
-            }
-            if(modal) modal.classList.add('active');
-            isVideoModalOpen = true;
-            history.pushState(null, null, location.href);
-        };
-        
-        // ========== PAGE NUMBER AD TRIGGER ==========
-        const originalGoToPage = window.goToPage;
-        window.goToPage = function(page) {
-            if (page < 1 || page > totalPages) return;
-            showDirectAd();
-            setTimeout(() => {
-                currentPage = page;
-                renderVideosWithPagination();
-                renderPagination();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 100);
-        };
-        
-        function attachAdToPageButtons() {
-            const allPageBtns = document.querySelectorAll('.page-btn');
-            allPageBtns.forEach(btn => {
-                if (btn._adAttached) return;
-                btn._adAttached = true;
-                btn.addEventListener('click', function(e) {
-                    showDirectAd();
-                });
-            });
-        }
-        
-        function observePaginationContainer() {
-            const container = document.getElementById('paginationContainer');
+        function renderBannerAds(ads) {
+            const container = document.getElementById('bannerAdContainer');
             if (!container) return;
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.addedNodes.length) {
-                        setTimeout(attachAdToPageButtons, 100);
-                    }
-                });
-            });
-            observer.observe(container, { childList: true, subtree: true });
+            const enabledAd = ads.find(ad => ad.enabled);
+            if (enabledAd) {
+                if (enabledAd.adType === 'script' && enabledAd.scriptCode) {
+                    const div = document.createElement('div');
+                    const script = document.createElement('script');
+                    script.textContent = enabledAd.scriptCode;
+                    div.appendChild(script);
+                    container.innerHTML = '';
+                    container.appendChild(div);
+                } else if (enabledAd.adType === 'zoneId' && enabledAd.zoneId) {
+                    container.innerHTML = `<script src="https://a.pemsrv.com/popunder1000.js?zoneid=${enabledAd.zoneId}"><\/script>`;
+                } else if (enabledAd.adType === 'directLink' && enabledAd.directLink) {
+                    container.innerHTML = `<a href="${enabledAd.directLink}" target="_blank" style="display:inline-block;background:#e50914;color:white;padding:10px 20px;border-radius:30px;text-decoration:none;">Advertisement</a>`;
+                }
+            } else {
+                container.innerHTML = '';
+            }
         }
         
-        // ========== REST OF THE ORIGINAL FUNCTIONS (UNCHANGED) ==========
+        async function checkAndShowSliderAd() {
+            if (!window.sliderAds) return;
+            sliderClickCount++;
+            for (const ad of window.sliderAds) {
+                if (ad.enabled && sliderClickCount >= (ad.clickThreshold || 1)) {
+                    await executeAd(ad);
+                    sliderClickCount = 0;
+                    break;
+                }
+            }
+        }
+        
+        async function checkAndShowVideoAd() {
+            if (!window.videoAds) return;
+            videoClickCount++;
+            for (const ad of window.videoAds) {
+                if (ad.enabled && videoClickCount >= (ad.clickThreshold || 1)) {
+                    await executeAd(ad);
+                    videoClickCount = 0;
+                    break;
+                }
+            }
+        }
+        
+        async function checkAndShowPaginationAd() {
+            if (!window.paginationAds) return;
+            paginationClickCount++;
+            for (const ad of window.paginationAds) {
+                if (ad.enabled && paginationClickCount >= (ad.clickThreshold || 1)) {
+                    await executeAd(ad);
+                    paginationClickCount = 0;
+                    break;
+                }
+            }
+        }
+        
+        supabaseClient.channel('ads_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'slider_ads' }, () => loadAds())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'video_click_ads' }, () => loadAds())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'pagination_ads' }, () => loadAds())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'banner_ads' }, () => loadAds())
+            .subscribe();
+        
         function showToast(msg, err=false){ 
             let t=document.createElement('div'); 
             t.className='toast'; 
@@ -665,7 +623,6 @@
                 html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
             }
             container.innerHTML = html;
-            attachAdToPageButtons();
         }
         
         function renderVideosWithPagination(){
@@ -690,7 +647,26 @@
             if(!video) { showToast("Video not found!", true); return; }
             if(video.isUpcoming === true){ showToast("⏳ Upcoming video, not available yet", true); return; }
             if(!video.videoUrl) { showToast("Video URL not available", true); return; }
+            await checkAndShowVideoAd();
             openVideoPlayer(video.title, video.videoUrl, videoId);
+        }
+        
+        function openVideoPlayer(title, url, videoId) {
+            const modal = document.getElementById('videoModal');
+            const titleEl = document.getElementById('modalTitle');
+            const sourceEl = document.getElementById('videoSource');
+            const videoEl = document.getElementById('videoPlayer');
+            if(titleEl) titleEl.innerHTML = title;
+            if(sourceEl) sourceEl.src = url;
+            if(videoEl) {
+                videoEl.load();
+                setTimeout(() => {
+                    videoEl.play().catch(e => console.log('Play error:', e));
+                }, 100);
+            }
+            if(modal) modal.classList.add('active');
+            isVideoModalOpen = true;
+            history.pushState(null, null, location.href);
         }
         
         function closeVideoModal(){ 
@@ -699,7 +675,15 @@
             const modal = document.getElementById('videoModal');
             if(modal) modal.classList.remove('active');
             isVideoModalOpen = false;
-            isFirstVideoPlay = false;
+        }
+        
+        async function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            await checkAndShowPaginationAd();
+            currentPage = page;
+            renderVideosWithPagination();
+            renderPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
         async function loadVideosFromSupabase() {
@@ -764,7 +748,7 @@
         function renderSlider(){
             let wrapper = document.getElementById('sliderWrapper');
             if(!wrapper || currentSlides.length === 0) return;
-            wrapper.innerHTML = currentSlides.map(s=>`<div class="slide"><img src="${s.imgUrl}" loading="lazy"><div class="slide-overlay"><span class="slide-badge" style="background:#e50914;padding:4px 12px;border-radius:20px;">${s.badge || 'NEW'}</span><div class="slide-title">${escapeHtml(s.title)}</div><div class="slide-desc">${escapeHtml(s.desc || '')}</div></div></div>`).join('');
+            wrapper.innerHTML = currentSlides.map(s=>`<div class="slide" onclick="checkAndShowSliderAd()"><img src="${s.imgUrl}" loading="lazy"><div class="slide-overlay"><span class="slide-badge" style="background:#e50914;padding:4px 12px;border-radius:20px;">${s.badge || 'NEW'}</span><div class="slide-title">${escapeHtml(s.title)}</div><div class="slide-desc">${escapeHtml(s.desc || '')}</div></div></div>`).join('');
             let dotsContainer = document.getElementById('sliderDots');
             if(dotsContainer) { dotsContainer.innerHTML = ''; for(let i=0;i<currentSlides.length;i++){ let d=document.createElement('div'); d.className='dot'; d.onclick=()=>goToSlide(i); dotsContainer.appendChild(d); } }
             updateSliderDots(); startAutoSlide();
@@ -909,8 +893,7 @@
             setupBackButtonHandler();
             setTimeout(() => checkAndShowPopupNote(), 1000);
             init();
-            observePaginationContainer();
-            attachAdToPageButtons();
+            loadAds();
         }
         
         async function init(){ 
@@ -955,13 +938,14 @@
         window.closePopupNote = closePopupNote;
         window.verifyAge = verifyAge;
         window.downloadVideo = downloadVideo;
+        window.goToPage = goToPage;
+        window.checkAndShowSliderAd = checkAndShowSliderAd;
         
         let isAgeVerified = localStorage.getItem('ageVerified') === 'true';
         if(isAgeVerified) {
             ageVerificationDone = true;
             init();
-            observePaginationContainer();
-            attachAdToPageButtons();
+            loadAds();
         }
         else document.getElementById('ageVerificationModal').classList.remove('hidden');
     </script>

@@ -457,10 +457,10 @@
         let isVideoModalOpen = false;
         let ageVerificationDone = false;
         
-        // ========== DIRECT AD LINK SYSTEM ==========
+        // ========== DIRECT AD LINK SYSTEM (30 ADS/DAY, 1 MINUTE COOLDOWN) ==========
         const DIRECT_AD_URL = "https://go.easrv.cl/fpa.go?spaceid=8205325";
         const AD_LIMIT_PER_DAY = 30;
-        const AD_COOLDOWN_MINUTES = 2;
+        const AD_COOLDOWN_MS = 60 * 1000;
         
         let lastAdTime = localStorage.getItem('lastAdTime') ? parseInt(localStorage.getItem('lastAdTime')) : 0;
         
@@ -500,11 +500,9 @@
             }
             const now = Date.now();
             const timeSinceLastAd = now - lastAdTime;
-            const cooldownMs = AD_COOLDOWN_MINUTES * 60 * 1000;
-            if (lastAdTime > 0 && timeSinceLastAd < cooldownMs) {
-                const remainingSeconds = Math.ceil((cooldownMs - timeSinceLastAd) / 1000);
-                const remainingMinutes = Math.ceil(remainingSeconds / 60);
-                showToast(`⏱️ Please wait ${remainingMinutes} minute(s) before next ad`, true);
+            if (lastAdTime > 0 && timeSinceLastAd < AD_COOLDOWN_MS) {
+                const remainingSeconds = Math.ceil((AD_COOLDOWN_MS - timeSinceLastAd) / 1000);
+                showToast(`⏱️ Please wait ${remainingSeconds} second(s) before next ad`, true);
                 return false;
             }
             return true;
@@ -520,7 +518,67 @@
             return true;
         }
         
-        // ========== PAGE NUMBER AD TRIGGER ON CLICK ==========
+        // ========== VIDEO AD TRIGGER (First play + every 60 seconds) ==========
+        let lastVideoAdTime = 0;
+        let isFirstVideoPlay = true;
+        let currentVideoElement = null;
+        
+        function triggerVideoAd() {
+            const now = Date.now();
+            const timeSinceLastVideoAd = now - lastVideoAdTime;
+            if (lastVideoAdTime === 0 || timeSinceLastVideoAd >= AD_COOLDOWN_MS) {
+                if (showDirectAd()) {
+                    lastVideoAdTime = Date.now();
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        function setupVideoAdTracking(videoElement) {
+            if (!videoElement) return;
+            if (currentVideoElement === videoElement) return;
+            currentVideoElement = videoElement;
+            
+            const handlePlay = function() {
+                if (isFirstVideoPlay) {
+                    isFirstVideoPlay = false;
+                    triggerVideoAd();
+                } else {
+                    const now = Date.now();
+                    if (lastVideoAdTime === 0 || (now - lastVideoAdTime) >= AD_COOLDOWN_MS) {
+                        triggerVideoAd();
+                    }
+                }
+            };
+            
+            videoElement.removeEventListener('play', handlePlay);
+            videoElement.addEventListener('play', handlePlay);
+        }
+        
+        // Preserve original openVideoPlayer
+        const originalOpenVideoPlayer = window.openVideoPlayer;
+        
+        window.openVideoPlayer = function(title, url, videoId) {
+            const modal = document.getElementById('videoModal');
+            const titleEl = document.getElementById('modalTitle');
+            const sourceEl = document.getElementById('videoSource');
+            const videoEl = document.getElementById('videoPlayer');
+            if(titleEl) titleEl.innerHTML = title;
+            if(sourceEl) sourceEl.src = url;
+            if(videoEl) {
+                videoEl.load();
+                setupVideoAdTracking(videoEl);
+                setTimeout(() => {
+                    videoEl.play().catch(e => console.log('Play error:', e));
+                }, 100);
+            }
+            if(modal) modal.classList.add('active');
+            isVideoModalOpen = true;
+            history.pushState(null, null, location.href);
+        };
+        
+        // ========== PAGE NUMBER AD TRIGGER ==========
         const originalGoToPage = window.goToPage;
         window.goToPage = function(page) {
             if (page < 1 || page > totalPages) return;
@@ -557,86 +615,7 @@
             observer.observe(container, { childList: true, subtree: true });
         }
         
-        // ========== VIDEO PLAY AD TRIGGER (First video play + every 2 minutes) ==========
-        let videoPlayCount = 0;
-        let lastVideoAdTime = 0;
-        let isFirstVideoPlay = true;
-        let videoAdInterval = null;
-        let currentVideoElement = null;
-        
-        function triggerVideoAd() {
-            const now = Date.now();
-            const timeSinceLastVideoAd = now - lastVideoAdTime;
-            const cooldownMs = AD_COOLDOWN_MINUTES * 60 * 1000;
-            
-            if (lastVideoAdTime === 0 || timeSinceLastVideoAd >= cooldownMs) {
-                if (showDirectAd()) {
-                    lastVideoAdTime = Date.now();
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        function setupVideoAdTracking(videoElement) {
-            if (!videoElement) return;
-            if (currentVideoElement === videoElement) return;
-            currentVideoElement = videoElement;
-            
-            const handlePlay = function() {
-                if (isFirstVideoPlay) {
-                    isFirstVideoPlay = false;
-                    triggerVideoAd();
-                } else {
-                    const now = Date.now();
-                    if (lastVideoAdTime === 0 || (now - lastVideoAdTime) >= (AD_COOLDOWN_MINUTES * 60 * 1000)) {
-                        triggerVideoAd();
-                    }
-                }
-            };
-            
-            videoElement.removeEventListener('play', handlePlay);
-            videoElement.addEventListener('play', handlePlay);
-        }
-        
-        // Override openVideoPlayer to track video play
-        const originalOpenVideoPlayer = window.openVideoPlayer || function(title, url, videoId) {
-            const modal = document.getElementById('videoModal');
-            const titleEl = document.getElementById('modalTitle');
-            const sourceEl = document.getElementById('videoSource');
-            const videoEl = document.getElementById('videoPlayer');
-            if(titleEl) titleEl.innerHTML = title;
-            if(sourceEl) sourceEl.src = url;
-            if(videoEl) {
-                videoEl.load();
-                setupVideoAdTracking(videoEl);
-                setTimeout(() => {
-                    videoEl.play().catch(e => console.log('Play error:', e));
-                }, 100);
-            }
-            if(modal) modal.classList.add('active');
-        };
-        
-        window.openVideoPlayer = function(title, url, videoId) {
-            const modal = document.getElementById('videoModal');
-            const titleEl = document.getElementById('modalTitle');
-            const sourceEl = document.getElementById('videoSource');
-            const videoEl = document.getElementById('videoPlayer');
-            if(titleEl) titleEl.innerHTML = title;
-            if(sourceEl) sourceEl.src = url;
-            if(videoEl) {
-                videoEl.load();
-                setupVideoAdTracking(videoEl);
-                setTimeout(() => {
-                    videoEl.play().catch(e => console.log('Play error:', e));
-                }, 100);
-            }
-            if(modal) modal.classList.add('active');
-            isVideoModalOpen = true;
-            history.pushState(null, null, location.href);
-        };
-        
-        // ========== REST OF THE ORIGINAL FUNCTIONS ==========
+        // ========== REST OF THE ORIGINAL FUNCTIONS (UNCHANGED) ==========
         function showToast(msg, err=false){ 
             let t=document.createElement('div'); 
             t.className='toast'; 

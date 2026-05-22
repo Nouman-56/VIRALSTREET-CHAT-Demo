@@ -653,6 +653,7 @@
             
             const adInner = adBanner.querySelector('[id^="pageAdInner"]');
             
+            // UPDATED AD SCRIPT - REPLACED WITH NEW SCRIPT
             const adScript = document.createElement('script');
             adScript.async = true;
             adScript.type = "application/javascript";
@@ -661,7 +662,6 @@
                 const insElem = document.createElement('ins');
                 insElem.className = "eas6a97888e33";
                 insElem.setAttribute("data-zoneid", "5930072");
-                insElem.setAttribute("data-block-ad-types", "0");
                 adInner.appendChild(insElem);
                 
                 const providerScript = document.createElement('script');

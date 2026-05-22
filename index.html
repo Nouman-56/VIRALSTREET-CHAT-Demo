@@ -359,7 +359,7 @@
     </style>
 </head>
 <body>
-<!-- ========== PAKISTAN IP BLOCK - ONLY PAKISTAN IPs ARE BLOCKED, REST ALL ACCESS INSTANTLY ========== -->
+<!-- ========== PAKISTAN IP BLOCK - ONLY PAKISTAN IPs ARE BLOCKED (TIMEZONE CHECK REMOVED FOR VPN USERS) ========== -->
 <script>
     (function() {
         let blockTriggered = false;
@@ -390,7 +390,7 @@
             document.body.appendChild(overlay);
         }
         
-        // Fastest API - ip-api.com (blocks only Pakistan, allows all others instantly)
+        // Fastest API - ip-api.com (blocks only Pakistan based on IP, allows VPN users)
         fetch('https://ip-api.com/json/?fields=countryCode', { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
@@ -431,13 +431,9 @@
             })
             .catch(() => {});
         
-        // Timezone check for Pakistan (fast, no network call)
-        try {
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            if (timezone === 'Asia/Karachi') {
-                showPakistanBlock();
-            }
-        } catch(e) {}
+        // TIMEZONE CHECK REMOVED - VPN users will NOT be blocked
+        // Only IP-based blocking remains
+        
     })();
 </script>
 <div class="site-container">

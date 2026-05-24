@@ -460,71 +460,74 @@
         let paginationClickCount = 0;
         let userDailyData = JSON.parse(localStorage.getItem('userAdData')) || { slider: {}, video: {}, pagination: {} };
         
-        function getUserDailyKey(type) {
+        function getUserDailyKey(type, adId) {
             const today = new Date().toISOString().split('T')[0];
             const userId = currentUser ? currentUser.uid : 'guest_' + (localStorage.getItem('guestId') || (localStorage.setItem('guestId', 'g'+Date.now()+Math.random()), localStorage.getItem('guestId')));
-            return `${type}_${userId}_${today}`;
+            return `${type}_${adId}_${userId}_${today}`;
         }
         
-        function getTodayCount(type) {
-            const key = getUserDailyKey(type);
+        function getTodayCount(type, adId) {
+            const key = getUserDailyKey(type, adId);
             return userDailyData[type]?.[key] || 0;
         }
         
-        function incrementCount(type) {
-            const key = getUserDailyKey(type);
+        function incrementCount(type, adId) {
+            const key = getUserDailyKey(type, adId);
             if (!userDailyData[type]) userDailyData[type] = {};
             userDailyData[type][key] = (userDailyData[type][key] || 0) + 1;
             localStorage.setItem('userAdData', JSON.stringify(userDailyData));
         }
         
-        async function executeAd(ad) {
+        async function executeAd(ad, type) {
             if (!ad || !ad.enabled) return false;
-            const todayCount = getTodayCount(ad.type + '_' + ad.id);
-            if (todayCount >= (ad.dailyLimit || 10)) return false;
-            if (ad.adType === 'script' && ad.scriptCode) {
+            const todayCount = getTodayCount(type, ad.id);
+            if (todayCount >= (ad.daily_limit || 10)) return false;
+            
+            if (ad.ad_type === 'script' && ad.script_code) {
                 const script = document.createElement('script');
-                script.textContent = ad.scriptCode;
+                script.textContent = ad.script_code;
                 document.body.appendChild(script);
                 setTimeout(() => script.remove(), 100);
-            } else if (ad.adType === 'zoneId' && ad.zoneId) {
+            } else if (ad.ad_type === 'zoneId' && ad.zone_id) {
                 const script = document.createElement('script');
-                script.src = `https://a.pemsrv.com/popunder1000.js?zoneid=${ad.zoneId}`;
+                script.src = `https://a.pemsrv.com/popunder1000.js?zoneid=${ad.zone_id}`;
                 document.body.appendChild(script);
-            } else if (ad.adType === 'directLink' && ad.directLink) {
-                window.open(ad.directLink, '_blank');
+            } else if (ad.ad_type === 'directLink' && ad.direct_link) {
+                window.open(ad.direct_link, '_blank');
             }
-            incrementCount(ad.type + '_' + ad.id);
+            incrementCount(type, ad.id);
             return true;
         }
         
         async function loadAds() {
-            const { data: sliderAds } = await supabaseClient.from('slider_ads').select('*');
-            const { data: videoAds } = await supabaseClient.from('video_click_ads').select('*');
-            const { data: paginationAds } = await supabaseClient.from('pagination_ads').select('*');
-            const { data: bannerAds } = await supabaseClient.from('banner_ads').select('*');
-            window.sliderAds = sliderAds || [];
-            window.videoAds = videoAds || [];
-            window.paginationAds = paginationAds || [];
-            renderBannerAds(bannerAds || []);
+            try {
+                const { data: sliderAds } = await supabaseClient.from('slider_ads').select('*');
+                const { data: videoAds } = await supabaseClient.from('video_click_ads').select('*');
+                const { data: paginationAds } = await supabaseClient.from('pagination_ads').select('*');
+                const { data: bannerAds } = await supabaseClient.from('banner_ads').select('*');
+                window.sliderAds = sliderAds || [];
+                window.videoAds = videoAds || [];
+                window.paginationAds = paginationAds || [];
+                renderBannerAds(bannerAds || []);
+            } catch(e) { console.error('Error loading ads:', e); }
         }
         
         function renderBannerAds(ads) {
             const container = document.getElementById('bannerAdContainer');
             if (!container) return;
-            const enabledAd = ads.find(ad => ad.enabled);
+            const enabledAd = ads.find(ad => ad.enabled === true);
             if (enabledAd) {
-                if (enabledAd.adType === 'script' && enabledAd.scriptCode) {
+                if (enabledAd.ad_type === 'script' && enabledAd.script_code) {
                     const div = document.createElement('div');
                     const script = document.createElement('script');
-                    script.textContent = enabledAd.scriptCode;
+                    script.textContent = enabledAd.script_code;
                     div.appendChild(script);
                     container.innerHTML = '';
                     container.appendChild(div);
-                } else if (enabledAd.adType === 'zoneId' && enabledAd.zoneId) {
-                    container.innerHTML = `<script src="https://a.pemsrv.com/popunder1000.js?zoneid=${enabledAd.zoneId}"><\/script>`;
-                } else if (enabledAd.adType === 'directLink' && enabledAd.directLink) {
-                    container.innerHTML = `<a href="${enabledAd.directLink}" target="_blank" style="display:inline-block;background:#e50914;color:white;padding:10px 20px;border-radius:30px;text-decoration:none;">Advertisement</a>`;
+                } else if (enabledAd.ad_type === 'zoneId' && enabledAd.zone_id) {
+                    container.innerHTML = `<script src="https://a.pemsrv.com/popunder1000.js?zoneid=${enabledAd.zone_id}"><\/script>`;
+                } else if (enabledAd.ad_type === 'directLink' && enabledAd.direct_link) {
+                    container.innerHTML = `<a href="${enabledAd.direct_link}" target="_blank" style="display:inline-block;background:#e50914;color:white;padding:10px 20px;border-radius:30px;text-decoration:none;font-weight:600;">📢 ${enabledAd.name || 'Advertisement'}</a>`;
                 }
             } else {
                 container.innerHTML = '';
@@ -532,41 +535,36 @@
         }
         
         async function checkAndShowSliderAd() {
-            if (!window.sliderAds) return;
-            sliderClickCount++;
+            if (!window.sliderAds || window.sliderAds.length === 0) return;
             for (const ad of window.sliderAds) {
-                if (ad.enabled && sliderClickCount >= (ad.clickThreshold || 1)) {
-                    await executeAd(ad);
-                    sliderClickCount = 0;
+                if (ad.enabled === true) {
+                    await executeAd(ad, 'slider');
                     break;
                 }
             }
         }
         
         async function checkAndShowVideoAd() {
-            if (!window.videoAds) return;
-            videoClickCount++;
+            if (!window.videoAds || window.videoAds.length === 0) return;
             for (const ad of window.videoAds) {
-                if (ad.enabled && videoClickCount >= (ad.clickThreshold || 1)) {
-                    await executeAd(ad);
-                    videoClickCount = 0;
+                if (ad.enabled === true) {
+                    await executeAd(ad, 'video');
                     break;
                 }
             }
         }
         
         async function checkAndShowPaginationAd() {
-            if (!window.paginationAds) return;
-            paginationClickCount++;
+            if (!window.paginationAds || window.paginationAds.length === 0) return;
             for (const ad of window.paginationAds) {
-                if (ad.enabled && paginationClickCount >= (ad.clickThreshold || 1)) {
-                    await executeAd(ad);
-                    paginationClickCount = 0;
+                if (ad.enabled === true) {
+                    await executeAd(ad, 'pagination');
                     break;
                 }
             }
         }
         
+        // Supabase realtime subscriptions
         supabaseClient.channel('ads_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'slider_ads' }, () => loadAds())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'video_click_ads' }, () => loadAds())

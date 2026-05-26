@@ -480,12 +480,9 @@
             localStorage.setItem('userAdData', JSON.stringify(userDailyData));
         }
         
-        // FIX: Updated executeAd to prevent page refresh
+        // FIXED: executeAd with no age verification check (age check removed from here)
         async function executeAd(ad) {
             if (!ad || !ad.enabled) return false;
-            
-            // Agar age verify nahi hai to ad mat chala
-            if (!ageVerificationDone) return false;
             
             const todayCount = getTodayCount(ad.type + '_' + ad.id);
             if (todayCount >= (ad.dailyLimit || 10)) return false;
@@ -500,7 +497,6 @@
                 script.src = `https://a.pemsrv.com/popunder1000.js?zoneid=${ad.zoneId}`;
                 document.body.appendChild(script);
             } else if (ad.adType === 'directLink' && ad.directLink) {
-                // Direct link ko open karo but same page ko refresh mat karo
                 window.open(ad.directLink, '_blank');
             }
             incrementCount(ad.type + '_' + ad.id);
@@ -540,15 +536,11 @@
             }
         }
         
-        // FIX: New function to handle slider click with page refresh prevention
+        // FIX: handleSliderClick - prevents page refresh on slider click
         function handleSliderClick(event) {
             if (event) {
                 event.preventDefault();
                 event.stopPropagation();
-            }
-            if (!ageVerificationDone) {
-                showToast("Please verify your age first!", true);
-                return false;
             }
             checkAndShowSliderAd();
             return false;
@@ -556,8 +548,6 @@
         
         async function checkAndShowSliderAd() {
             if (!window.sliderAds) return;
-            // Age verification check
-            if (!ageVerificationDone) return;
             sliderClickCount++;
             for (const ad of window.sliderAds) {
                 if (ad.enabled && sliderClickCount >= (ad.clickThreshold || 1)) {
@@ -570,8 +560,6 @@
         
         async function checkAndShowVideoAd() {
             if (!window.videoAds) return;
-            // Age verification check
-            if (!ageVerificationDone) return;
             videoClickCount++;
             for (const ad of window.videoAds) {
                 if (ad.enabled && videoClickCount >= (ad.clickThreshold || 1)) {
@@ -584,8 +572,6 @@
         
         async function checkAndShowPaginationAd() {
             if (!window.paginationAds) return;
-            // Age verification check
-            if (!ageVerificationDone) return;
             paginationClickCount++;
             for (const ad of window.paginationAds) {
                 if (ad.enabled && paginationClickCount >= (ad.clickThreshold || 1)) {
@@ -774,7 +760,7 @@
         
         function renderAll(){ renderVideosWithPagination(); renderUpcomingTrending(); }
         
-        // FIX: Updated renderSlider function with handleSliderClick
+        // FIX: renderSlider with handleSliderClick
         function renderSlider(){
             let wrapper = document.getElementById('sliderWrapper');
             if(!wrapper || currentSlides.length === 0) return;

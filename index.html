@@ -30,9 +30,9 @@
         .hero-section { margin-top: -80px; }
         .slider-container { overflow: hidden; position: relative; }
         .slider-wrapper { display: flex; transition: transform 0.5s cubic-bezier(0.2,0.9,0.4,1.1); cursor: grab; }
-        .slide { min-width: 100%; aspect-ratio: 16/9; position: relative; }
-        .slide img { width: 100%; height: 100%; object-fit: cover; }
-        .slide-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%); padding: 60px 60px 30px; }
+        .slide { min-width: 100%; aspect-ratio: 16/9; position: relative; cursor: pointer; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .slide-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%); padding: 60px 60px 30px; pointer-events: none; }
         .slide-title { font-size: 48px; font-weight: 800; max-width: 60%; }
         .slider-nav button { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; z-index: 10; backdrop-filter: blur(4px); }
         .slider-nav button:hover { background: #E50914; }
@@ -534,6 +534,20 @@
             }
         }
         
+        // FIX: New function to handle slider click with page refresh prevention
+        function handleSliderClick(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            if (!ageVerificationDone) {
+                showToast("Please verify your age first!", true);
+                return false;
+            }
+            checkAndShowSliderAd();
+            return false;
+        }
+        
         async function checkAndShowSliderAd() {
             if (!window.sliderAds) return;
             sliderClickCount++;
@@ -748,10 +762,11 @@
         
         function renderAll(){ renderVideosWithPagination(); renderUpcomingTrending(); }
         
+        // FIX: Updated renderSlider function with handleSliderClick
         function renderSlider(){
             let wrapper = document.getElementById('sliderWrapper');
             if(!wrapper || currentSlides.length === 0) return;
-            wrapper.innerHTML = currentSlides.map(s=>`<div class="slide" onclick="checkAndShowSliderAd()"><img src="${s.imgUrl}" loading="lazy"><div class="slide-overlay"><span class="slide-badge" style="background:#e50914;padding:4px 12px;border-radius:20px;">${s.badge || 'NEW'}</span><div class="slide-title">${escapeHtml(s.title)}</div><div class="slide-desc">${escapeHtml(s.desc || '')}</div></div></div>`).join('');
+            wrapper.innerHTML = currentSlides.map(s=>`<div class="slide" onclick="handleSliderClick(event)"><img src="${s.imgUrl}" loading="lazy"><div class="slide-overlay"><span class="slide-badge" style="background:#e50914;padding:4px 12px;border-radius:20px;">${s.badge || 'NEW'}</span><div class="slide-title">${escapeHtml(s.title)}</div><div class="slide-desc">${escapeHtml(s.desc || '')}</div></div></div>`).join('');
             let dotsContainer = document.getElementById('sliderDots');
             if(dotsContainer) { dotsContainer.innerHTML = ''; for(let i=0;i<currentSlides.length;i++){ let d=document.createElement('div'); d.className='dot'; d.onclick=()=>goToSlide(i); dotsContainer.appendChild(d); } }
             updateSliderDots(); startAutoSlide();
@@ -943,6 +958,7 @@
         window.downloadVideo = downloadVideo;
         window.goToPage = goToPage;
         window.checkAndShowSliderAd = checkAndShowSliderAd;
+        window.handleSliderClick = handleSliderClick;
         
         let isAgeVerified = localStorage.getItem('ageVerified') === 'true';
         if(isAgeVerified) {

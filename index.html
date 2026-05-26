@@ -457,9 +457,29 @@
         let isVideoModalOpen = false;
         let ageVerificationDone = false;
         
-        let sliderClickCount = 0;
-        let videoClickCount = 0;
-        let paginationClickCount = 0;
+        // Counters ko localStorage mein store karo taake page refresh se reset na ho
+        function getStoredCount(type) {
+            const key = `ad_click_count_${type}`;
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                const data = JSON.parse(stored);
+                const today = new Date().toISOString().split('T')[0];
+                if (data.date === today) {
+                    return data.count;
+                }
+            }
+            return 0;
+        }
+        
+        function setStoredCount(type, count) {
+            const key = `ad_click_count_${type}`;
+            const today = new Date().toISOString().split('T')[0];
+            localStorage.setItem(key, JSON.stringify({ date: today, count: count }));
+        }
+        
+        let sliderClickCount = getStoredCount('slider');
+        let videoClickCount = getStoredCount('video');
+        let paginationClickCount = getStoredCount('pagination');
         let userDailyData = JSON.parse(localStorage.getItem('userAdData')) || { slider: {}, video: {}, pagination: {} };
         
         function getUserDailyKey(type) {
@@ -533,13 +553,12 @@
             }
         }
         
-        // FIX: handleSliderClick - prevents page refresh, NO age check inside this function for ad
+        // handleSliderClick - page refresh rokne ke liye
         function handleSliderClick(event) {
             if (event) {
                 event.preventDefault();
                 event.stopPropagation();
             }
-            // Sirf age verification check - agar verify nahi to ad mat chala
             if (!ageVerificationDone) {
                 showToast("Please verify your age first!", true);
                 return false;
@@ -551,10 +570,13 @@
         async function checkAndShowSliderAd() {
             if (!window.sliderAds) return;
             sliderClickCount++;
+            setStoredCount('slider', sliderClickCount);
+            
             for (const ad of window.sliderAds) {
                 if (ad.enabled && sliderClickCount >= (ad.clickThreshold || 1)) {
                     await executeAd(ad);
                     sliderClickCount = 0;
+                    setStoredCount('slider', 0);
                     break;
                 }
             }
@@ -563,10 +585,13 @@
         async function checkAndShowVideoAd() {
             if (!window.videoAds) return;
             videoClickCount++;
+            setStoredCount('video', videoClickCount);
+            
             for (const ad of window.videoAds) {
                 if (ad.enabled && videoClickCount >= (ad.clickThreshold || 1)) {
                     await executeAd(ad);
                     videoClickCount = 0;
+                    setStoredCount('video', 0);
                     break;
                 }
             }
@@ -575,10 +600,13 @@
         async function checkAndShowPaginationAd() {
             if (!window.paginationAds) return;
             paginationClickCount++;
+            setStoredCount('pagination', paginationClickCount);
+            
             for (const ad of window.paginationAds) {
                 if (ad.enabled && paginationClickCount >= (ad.clickThreshold || 1)) {
                     await executeAd(ad);
                     paginationClickCount = 0;
+                    setStoredCount('pagination', 0);
                     break;
                 }
             }
@@ -762,7 +790,6 @@
         
         function renderAll(){ renderVideosWithPagination(); renderUpcomingTrending(); }
         
-        // FIX: renderSlider with handleSliderClick - page refresh rokne ke liye
         function renderSlider(){
             let wrapper = document.getElementById('sliderWrapper');
             if(!wrapper || currentSlides.length === 0) return;
@@ -886,7 +913,6 @@
         
         function closePopupNote() { document.getElementById('popupNoteModal').classList.add('hidden'); }
         
-        // FIX: verifyAge - bilkul pehle jaisa, no ad call
         function verifyAge(over){
             if(over){ 
                 localStorage.setItem('ageVerified','true'); 
@@ -961,7 +987,6 @@
         window.checkAndShowSliderAd = checkAndShowSliderAd;
         window.handleSliderClick = handleSliderClick;
         
-        // FIX: Age verification already done check - refresh par dobara nahi aayegi
         let isAgeVerified = localStorage.getItem('ageVerified') === 'true';
         if(isAgeVerified) {
             ageVerificationDone = true;

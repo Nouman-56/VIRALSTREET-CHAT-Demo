@@ -480,13 +480,10 @@
             localStorage.setItem('userAdData', JSON.stringify(userDailyData));
         }
         
-        // FIXED: executeAd with no age verification check (age check removed from here)
         async function executeAd(ad) {
             if (!ad || !ad.enabled) return false;
-            
             const todayCount = getTodayCount(ad.type + '_' + ad.id);
             if (todayCount >= (ad.dailyLimit || 10)) return false;
-            
             if (ad.adType === 'script' && ad.scriptCode) {
                 const script = document.createElement('script');
                 script.textContent = ad.scriptCode;
@@ -536,11 +533,16 @@
             }
         }
         
-        // FIX: handleSliderClick - prevents page refresh on slider click
+        // FIX: handleSliderClick - prevents page refresh, NO age check inside this function for ad
         function handleSliderClick(event) {
             if (event) {
                 event.preventDefault();
                 event.stopPropagation();
+            }
+            // Sirf age verification check - agar verify nahi to ad mat chala
+            if (!ageVerificationDone) {
+                showToast("Please verify your age first!", true);
+                return false;
             }
             checkAndShowSliderAd();
             return false;
@@ -760,7 +762,7 @@
         
         function renderAll(){ renderVideosWithPagination(); renderUpcomingTrending(); }
         
-        // FIX: renderSlider with handleSliderClick
+        // FIX: renderSlider with handleSliderClick - page refresh rokne ke liye
         function renderSlider(){
             let wrapper = document.getElementById('sliderWrapper');
             if(!wrapper || currentSlides.length === 0) return;
@@ -884,6 +886,7 @@
         
         function closePopupNote() { document.getElementById('popupNoteModal').classList.add('hidden'); }
         
+        // FIX: verifyAge - bilkul pehle jaisa, no ad call
         function verifyAge(over){
             if(over){ 
                 localStorage.setItem('ageVerified','true'); 
@@ -958,13 +961,18 @@
         window.checkAndShowSliderAd = checkAndShowSliderAd;
         window.handleSliderClick = handleSliderClick;
         
+        // FIX: Age verification already done check - refresh par dobara nahi aayegi
         let isAgeVerified = localStorage.getItem('ageVerified') === 'true';
         if(isAgeVerified) {
             ageVerificationDone = true;
+            document.getElementById('ageVerificationModal').classList.add('hidden');
+            showMainContent();
             init();
             loadAds();
         }
-        else document.getElementById('ageVerificationModal').classList.remove('hidden');
+        else {
+            document.getElementById('ageVerificationModal').classList.remove('hidden');
+        }
     </script>
 </div>
 </body>

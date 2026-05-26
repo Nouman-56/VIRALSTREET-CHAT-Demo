@@ -130,7 +130,6 @@
         .popup-note-container .message { color: #ccc; line-height: 1.6; margin-bottom: 25px; font-size: 14px; }
         .popup-ok-btn { background: #e50914; border: none; padding: 12px 35px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 16px; }
         .popup-ok-btn:hover { transform: scale(1.05); background: #ff1a1a; }
-        /* Footer Banner Ad Styles */
         .footer-ad-container {
             text-align: center;
             margin: 40px 0 20px 0;
@@ -481,10 +480,16 @@
             localStorage.setItem('userAdData', JSON.stringify(userDailyData));
         }
         
+        // FIX: Updated executeAd to prevent page refresh
         async function executeAd(ad) {
             if (!ad || !ad.enabled) return false;
+            
+            // Agar age verify nahi hai to ad mat chala
+            if (!ageVerificationDone) return false;
+            
             const todayCount = getTodayCount(ad.type + '_' + ad.id);
             if (todayCount >= (ad.dailyLimit || 10)) return false;
+            
             if (ad.adType === 'script' && ad.scriptCode) {
                 const script = document.createElement('script');
                 script.textContent = ad.scriptCode;
@@ -495,6 +500,7 @@
                 script.src = `https://a.pemsrv.com/popunder1000.js?zoneid=${ad.zoneId}`;
                 document.body.appendChild(script);
             } else if (ad.adType === 'directLink' && ad.directLink) {
+                // Direct link ko open karo but same page ko refresh mat karo
                 window.open(ad.directLink, '_blank');
             }
             incrementCount(ad.type + '_' + ad.id);
@@ -550,6 +556,8 @@
         
         async function checkAndShowSliderAd() {
             if (!window.sliderAds) return;
+            // Age verification check
+            if (!ageVerificationDone) return;
             sliderClickCount++;
             for (const ad of window.sliderAds) {
                 if (ad.enabled && sliderClickCount >= (ad.clickThreshold || 1)) {
@@ -562,6 +570,8 @@
         
         async function checkAndShowVideoAd() {
             if (!window.videoAds) return;
+            // Age verification check
+            if (!ageVerificationDone) return;
             videoClickCount++;
             for (const ad of window.videoAds) {
                 if (ad.enabled && videoClickCount >= (ad.clickThreshold || 1)) {
@@ -574,6 +584,8 @@
         
         async function checkAndShowPaginationAd() {
             if (!window.paginationAds) return;
+            // Age verification check
+            if (!ageVerificationDone) return;
             paginationClickCount++;
             for (const ad of window.paginationAds) {
                 if (ad.enabled && paginationClickCount >= (ad.clickThreshold || 1)) {

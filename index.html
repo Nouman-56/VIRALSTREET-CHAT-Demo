@@ -167,7 +167,14 @@
             const overlay = document.createElement('div');
             overlay.className = 'pakistan-block-overlay';
             overlay.id = 'pakistanBlockOverlay';
-            overlay.innerHTML = '<div class="pakistan-block-container"><div class="block-icon"><i class="fas fa-map-marker-alt"></i></div><h1>Access Denied</h1><div class="block-message">This Site is Not Available in Your Region</div><div class="block-submessage">Due to country restrictions, this website has been blocked in your region.<br>We apologize for the inconvenience.</div></div>';
+            overlay.innerHTML = `
+                <div class="pakistan-block-container">
+                    <div class="block-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <h1>Access Denied</h1>
+                    <div class="block-message">This Site is Not Available in Your Region</div>
+                    <div class="block-submessage">Due to country restrictions, this website has been blocked in your region.<br>We apologize for the inconvenience.</div>
+                </div>
+            `;
             document.body.innerHTML = '';
             document.body.appendChild(overlay);
         }
@@ -297,9 +304,11 @@
     <div class="auth-modal" id="termsModal"><div class="auth-container" style="max-height:70vh;overflow:auto;"><h2>Terms & 18+ Policy</h2><p style="font-size:13px;">By signing up you confirm you are 18+. Content includes adult scandals. Membership is non-refundable. Admin can terminate accounts that abuse system.</p><button class="auth-btn-full" onclick="closeTermsModal()">Accept</button></div></div>
 
     <script>
+        // ========== SUPABASE & FIREBASE SETUP ==========
         const SUPABASE_URL = 'https://gbbugdhizwrrmrvtytec.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiYnVnZGhpendycm1ydnR5dGVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODEyMTEsImV4cCI6MjA5NDM1NzIxMX0.S5Lp7tyzCjIvFQovX0ntNhgc81KW5MNUoH5CHFZQdxU';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         const firebaseConfig = {
             apiKey: "AIzaSyDLloBWMeIB62CYFjxx_2DPicV9im6wFiI",
             authDomain: "viralstreet-c0128.firebaseapp.com",
@@ -335,6 +344,7 @@
                 const today = new Date().toISOString().split('T')[0];
                 const visitorType = localStorage.getItem('hasVisitedBefore') === 'true' ? 'returning' : 'new';
                 if (!localStorage.getItem('hasVisitedBefore')) localStorage.setItem('hasVisitedBefore', 'true');
+                
                 const { data: existingStats } = await supabaseClient.from('visitor_stats').select('*').eq('date', today).single();
                 if (existingStats) {
                     await supabaseClient.from('visitor_stats').update({
@@ -343,7 +353,9 @@
                         unique_visitors: (existingStats.unique_visitors || 0) + (visitorType === 'new' ? 1 : 0)
                     }).eq('date', today);
                 } else {
-                    await supabaseClient.from('visitor_stats').insert([{ date: today, visitors: 1, page_views: 1, unique_visitors: visitorType === 'new' ? 1 : 0, auth_views: 0 }]);
+                    await supabaseClient.from('visitor_stats').insert([{
+                        date: today, visitors: 1, page_views: 1, unique_visitors: visitorType === 'new' ? 1 : 0, auth_views: 0
+                    }]);
                 }
                 await trackLiveUser(visitorType);
             } catch (error) { console.error('Error tracking visitor:', error); }
@@ -376,7 +388,7 @@
             } catch (error) { console.error('Error tracking auth view:', error); }
         }
         
-        // ========== AD TRACKING ==========
+        // ========== AD TRACKING WITH SUPABASE ==========
         async function getUserAdCount(adType) {
             try {
                 const userId = currentUser ? currentUser.uid : 'guest_' + sessionId;
@@ -407,6 +419,7 @@
             if (!ad || !ad.enabled) return false;
             const { adShownCount } = await getUserAdCount(ad.type);
             if (adShownCount >= (ad.dailyLimit || 30)) return false;
+            
             if (ad.adType === 'script' && ad.scriptCode) {
                 const script = document.createElement('script');
                 script.textContent = ad.scriptCode;
@@ -454,6 +467,7 @@
             } else { container.innerHTML = ''; }
         }
         
+        // Slider click handler - prevents page refresh
         function handleSliderClick(event) {
             if (event) { event.preventDefault(); event.stopPropagation(); }
             if (!ageVerificationDone) { showToast("Please verify your age first!", true); return false; }
@@ -876,6 +890,8 @@
         window.verifyAge = verifyAge;
         window.downloadVideo = downloadVideo;
         window.goToPage = goToPage;
+        window.checkAndShowSliderAd = checkAndShowSliderAd;
+        window.handleSliderClick = handleSliderClick;
         
         let isAgeVerified = localStorage.getItem('ageVerified') === 'true';
         if(isAgeVerified) {
